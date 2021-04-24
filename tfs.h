@@ -17,6 +17,10 @@
 #define MAX_INUM 1024
 #define MAX_DNUM 16384
 
+struct data_node{
+	void* data;
+	struct data_node *next_node;
+}
 
 struct superblock {
 	uint32_t	magic_num;			/* magic number */
