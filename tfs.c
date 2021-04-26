@@ -296,14 +296,69 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 
 int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 
-
 	// Step 1: Read dir_inode's data block and checks each directory entry of dir_inode
-	
+	int i;
+	int foundDir = -1;
+
+	//allocate space for current data block being read
+	void* current_data_block = malloc(BLOCK_SIZE);
+	for(i = 0; i < 16; i++){
+		int current_data_block_index = dir_inode.direct_ptr[i];
+		if(current_data_block_index == -1){
+			break;
+		}
+		
+		bioread(current_data_block_index, current_data_block);
+
+		int j = 0;
+		while(j + sizeof(struct dirent) < BLOCK_SIZE){
+			//void* address_of_dir_entry = block->data + j;
+			void* address_of_dir_entry = current_data_block + j;
+			struct dirent current_entry;
+			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
+
+			if(strcmp(fname, current_entry.name) == 0){// found what we want to remove
+				current_entry.valid = -1;
+				//clear data blocks 
+				//update data bitmap
+				
+
+				//make the inode invalid and update inode bitmap
+				struct inode* inode = malloc(sizeof(*inode));
+				void* block = malloc(BLOCK_SIZE);
+				int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
+				readi(current_entry.ino, inode);
+				bioread(superblock->i_start_blk + (current_entry.ino / inodes_per_block), block);
+				inode->valid = -1;
+				unset_bitmap(inode_bitmap, inode->ino);
+				int offset = current_entry.ino % inodes_per_block;
+				memcpy(block+offset, inode, sizeof(struct inode));
+
+				//write bitmaps to disk
+				biowrite(superblock->i_bitmap_blk, inode_bitmap);
+				biowrite(superblock->d_bitmap_blk, data_region_bitmap);
+
+				//write inode block to disk
+				biowrite(superblock->i_start_blk + (current_entry.ino / inodes_per_block), block);
+				
+				
+				//write cleared datablock to disk
+				biowrite(current_data_block_index, current_data_block);
+				
+				return 0; 
+			}
+
+			j = j + sizeof(struct dirent);
+			
+
+		}
+		
+	}
+	//we cannot find the dirent
+	return -1;
 	// Step 2: Check if fname exist
 
 	// Step 3: If exist, then remove it from dir_inode's data block and write to disk
-
-	return 0;
 }
 
 /* 
