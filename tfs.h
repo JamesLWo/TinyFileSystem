@@ -18,6 +18,7 @@
 #define MAX_DNUM 16384
 
 struct data_node{
+	int block_num;
 	void* data;
 	struct data_node *next_node;
 }
