@@ -256,7 +256,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			//fill new data block with invalid dirents 
 			struct dirent new_dirent;
 			new_dirent.valid = -1;
-			memset(new_data_block + j, &new_dirent, sizeof(struct dirent));
+			memcpy(new_data_block + j, &new_dirent, sizeof(struct dirent));
 			j = j + sizeof(struct dirent);
 		}
 		//set first dirent to valid
@@ -373,7 +373,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
  */
 int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	//ignore the first character, which is '/'
-	char* truncatedPath = path+1;
+	const char* truncatedPath = path+1;
 	int i;
 	int index = -1;
 	//find the index of the first occurrence of '/'
