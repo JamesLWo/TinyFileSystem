@@ -213,7 +213,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		if(dir_inode.directptr[z] == -1){
 			break;
 		}
-		bioread(dir_inode.directptr[z], current_data_block);
+		bio_read(dir_inode.direct_ptr[z], current_data_block);
 		int j = 0;
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			void* address_of_dir_entry = current_data_block + j;
@@ -231,7 +231,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 				}
 				
 				//save info about the found data block
-				found_data_block_number = dir_inode.directptr[z];
+				found_data_block_number = dir_inode.direct_ptr[z];
 				found_block = current_data_block;
 				break;
 			}
@@ -250,6 +250,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	//if we ended up not finding a invalid dirent in the available data blocks, find a new data block
 	if (found_data_block_number == -1){ 
 		//new data block created
+		int j = 0;
 		new_data_block_number = get_avail_blkno();
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			//fill new data block with invalid dirents 
@@ -265,13 +266,13 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		first_dirent->len = name_len;
 		int i = 0;
 		while(i < name_len){
-			first_dirent.name[i] = fname + i;
+			first_dirent->name[i] = fname + i;
 		}
 		//add the new block index to the directptr array
 		int a;
 		for(a = 0; a < 16; a++){
-			if(dir_inode.directptr[a] == -1){
-				dir_inode.directptr[a] = new_data_block_number;
+			if(dir_inode.direct_ptr[a] == -1){
+				dir_inode.direct_ptr[a] = new_data_block_number;
 				break;
 			}
 		}
@@ -334,22 +335,22 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 				void* block = malloc(BLOCK_SIZE);
 				int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
 				readi(current_entry.ino, inode);
-				bioread(superblock->i_start_blk + (current_entry.ino / inodes_per_block), block);
+				bio_read(superblock->i_start_blk + (current_entry.ino / inodes_per_block), block);
 				inode->valid = -1;
 				unset_bitmap(inode_bitmap, inode->ino);
 				int offset = current_entry.ino % inodes_per_block;
 				memcpy(block+offset, inode, sizeof(struct inode));
 
 				//write bitmaps to disk
-				biowrite(superblock->i_bitmap_blk, inode_bitmap);
-				biowrite(superblock->d_bitmap_blk, data_region_bitmap);
+				bio_write(superblock->i_bitmap_blk, inode_bitmap);
+				bio_write(superblock->d_bitmap_blk, data_region_bitmap);
 
 				//write inode block to disk
-				biowrite(superblock->i_start_blk + (current_entry.ino / inodes_per_block), block);
+				bio_write(superblock->i_start_blk + (current_entry.ino / inodes_per_block), block);
 				
 				
 				//write cleared datablock to disk
-				biowrite(current_data_block_index, current_data_block);
+				bio_write(current_data_block_index, current_data_block);
 				
 				return 0; 
 			}
