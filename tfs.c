@@ -210,7 +210,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		//we also know directptr[j] refers to a data block that only has dirents, we just want a dirent that has valid = 0
 
 		//as soon as we see a -1, we know that we've already considered all available data blocks
-		if(dir_inode.directptr[z] == -1){
+		if(dir_inode.direct_ptr[z] == -1){
 			break;
 		}
 		bio_read(dir_inode.direct_ptr[z], current_data_block);
