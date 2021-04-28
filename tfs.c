@@ -419,7 +419,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 				//dirent is found, and we're at the end of filepath
 				memcpy(inode, inode_of_current_entry, sizeof(struct inode));
 				free(inode_of_current_entry);
-				return 1;
+				return 0;
 			} 
 			//found it, have another directory to go into
 			else if(strcmp(directory_name, current_entry.name) == 0 && inode_of_current_entry->type == 0){
@@ -572,29 +572,48 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 
 	// Step 1: call get_node_by_path() to get inode from path
 
+	struct inode* target_inode = malloc(sizeof(*target_inode));
+	get_node_by_path(path, 0, target_inode);
+
 	// Step 2: fill attribute of file into stbuf from inode
 
-		stbuf->st_mode   = S_IFDIR | 0755;
-		stbuf->st_nlink  = 2;
-		time(&stbuf->st_mtime);
+	stbuf->st_mode   = S_IFDIR | 0755;
+	stbuf->st_nlink  = 2;
+	time(&stbuf->st_mtime);
 
+
+	//more attributes to fill in to stbuf
+	stbuf->st_blksize = BLOCK_SIZE;
+	stbuf->st_size = inode->vstat.st_size;
+
+	free(target_inode);
 	return 0;
 }
 
 static int tfs_opendir(const char *path, struct fuse_file_info *fi) {
 
+	struct inode* inode = malloc(sizeof(*inode));
+	return get_node_by_path(path, 0, inode);
+
 	// Step 1: Call get_node_by_path() to get inode from path
 
 	// Step 2: If not find, return -1
 
-    return 0;
+    //return 0;
 }
 
 static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi) {
 
 	// Step 1: Call get_node_by_path() to get inode from path
+	struct inode* inode = malloc(sizeof(*inode));
+	int retval = get_node_by_path(path, 0, inode);
+	if (retval < 0){
+		return ENOENT;
+	}
 
 	// Step 2: Read directory entries from its data blocks, and copy them to filler
+	//rn, inode directptrs have all dirents
+
 
 	return 0;
 }
@@ -661,7 +680,8 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 static int tfs_open(const char *path, struct fuse_file_info *fi) {
 
 	// Step 1: Call get_node_by_path() to get inode from path
-
+	struct inode* inode = malloc(sizeof(*inode));
+	return get_node_by_path(path, 0, inode);
 	// Step 2: If not find, return -1
 
 	return 0;
