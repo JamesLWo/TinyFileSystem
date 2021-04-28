@@ -200,7 +200,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	
 
 	int found_data_block_number =-1;
-	void* found_block;
+	void* found_block = NULL;
 
 	//reserve space to read in the data blocks 
 	void* current_data_block = malloc(BLOCK_SIZE);
@@ -227,7 +227,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 				current_entry.len = name_len;
 				int i = 0;
 				while(i < name_len){
-					current_entry.name[i] = fname + i;
+					current_entry.name[i] = *(fname + i);
 				}
 				
 				//save info about the found data block
@@ -266,7 +266,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		first_dirent->len = name_len;
 		int i = 0;
 		while(i < name_len){
-			first_dirent->name[i] = fname + i;
+			first_dirent->name[i] = *(fname + i);
 		}
 		//add the new block index to the directptr array
 		int a;
