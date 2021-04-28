@@ -504,14 +504,14 @@ int tfs_mkfs() {
 
 	int number_of_elements = MAX_INUM / 8;
 	inode_bitmap = malloc(number_of_elements);
-	memset(inode_bitmap, 0, sizeof(inode_bitmap));
+	memset(inode_bitmap, 0, number_of_elements);
 	bio_write(1, inode_bitmap);
 
 
 	// initialize data block bitmap
 	number_of_elements = MAX_DNUM / 8;
 	data_region_bitmap = malloc(number_of_elements);
-	memset(data_region_bitmap, 0, sizeof(data_region_bitmap));
+	memset(data_region_bitmap, 0, number_of_elements);
 	bio_write(2, data_region_bitmap);
 
 	
