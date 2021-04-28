@@ -315,7 +315,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 			break;
 		}
 		
-		bioread(current_data_block_index, current_data_block);
+		bio_read(current_data_block_index, current_data_block);
 
 		int j = 0;
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
