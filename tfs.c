@@ -26,8 +26,8 @@ char diskfile_path[PATH_MAX];
 
 // Declare your in-memory data structures here
 
-char* inode_bitmap = NULL;
-char* data_region_bitmap = NULL;
+unsigned char* inode_bitmap = NULL;
+unsigned char* data_region_bitmap = NULL;
 struct superblock* superblock;
 int block_number = 4;
 
