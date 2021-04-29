@@ -698,13 +698,12 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	// Step 2: Call get_node_by_path() to get inode of parent directory
 	printf("calling getnodebypath() on %s\n", parent_directory_path);
 	struct inode parent_inode;
-	int retval = get_node_by_path(parent_directory_path, 0, &target_inode);
+	int retval = get_node_by_path(parent_directory_path, 0, &parent_inode);
 	if (retval < 0) {
 		printf("dir not found\n");
 		return ENOENT;
 	}
 	printf("check if basename already exists inside parent\n");
-	if (get_node_by_path(path, 0, ))
 	// Step 3: Call get_avail_ino() to get an available inode number
 	int new_inode_number = get_avail_ino();
 	printf("found available inode %d\n", new_inode_number);
@@ -713,7 +712,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	printf("calling dir_add to add this dirent to the parent directory \n");
 
 	
-	dir_add(parent_inode.ino, new_inode_number, basename, strlen(basename));
+	dir_add(parent_inode, new_inode_number, basename, strlen(basename));
 
 	//make new inode for directory
 	printf("making new directory inode\n");
