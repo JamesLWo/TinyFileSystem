@@ -581,11 +581,11 @@ static void *tfs_init(struct fuse_conn_info *conn) {
 		// Step 1b: If disk file is found, just initialize in-memory data structures and read superblock from disk
 		// initialize inode bitmap
 		int number_of_elements = MAX_INUM / 8;
-		printf("mallocing %d elements for inode bitmap: %d\n", number_of_elements);
+		printf("mallocing %d elements for inode bitmap\n", number_of_elements);
 		inode_bitmap = malloc(number_of_elements);
 		// initialize data block bitmap
 		number_of_elements = MAX_DNUM / 8;
-		printf("mallocing %d elements for data bitmap: %d\n", number_of_elements);
+		printf("mallocing %d elements for data bitmap\n", number_of_elements);
 		data_region_bitmap = malloc(number_of_elements);
 		printf("mallocing superblock\n");
 		struct superblock* superblock = malloc(sizeof(*superblock));
