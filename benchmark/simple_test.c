@@ -1,4 +1,4 @@
-#include <unistd.h>
+ #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -9,7 +9,7 @@
 #include <dirent.h>
 
 /* You need to change this macro to your TFS mount point*/
-#define TESTDIR "/tmp/mountdir"
+#define TESTDIR "/tmp/jlw373/mountdir"
 
 #define N_FILES 100
 #define BLOCKSIZE 4096
