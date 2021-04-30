@@ -292,6 +292,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		int a;
 		for(a = 0; a < 16; a++){
 			if(dir_inode.direct_ptr[a] == -1){
+				printf("adding new block number %d to direct_ptr index %d\n", new_data_block_number, a);
 				dir_inode.direct_ptr[a] = new_data_block_number;
 				printf("dir_inode.direct_ptr[%d] = %d\n", a, dir_inode.direct_ptr[a]);
 				break;
@@ -305,7 +306,8 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	dir_inode.link += 1;
 	//update stat here
 	
-	
+	printf("writing changes for directory inode to disk\n");
+	writei(dir_inode.ino, &dir_inode);
 
 	// Write directory entry
 	if(found_data_block_number > 0){
@@ -422,7 +424,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	printf("reading inode for ino %d...\n", ino);
 	struct inode current_inode;
 	readi(ino, &current_inode);
-
+	printf("current inode number: %d\n", current_inode.ino);
 	int next_ino = -1;
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for (i = 0; i < 16; i++){
