@@ -120,9 +120,14 @@ int writei(uint16_t ino, struct inode *inode) {
 	void* buffer = malloc(BLOCK_SIZE);
 	bio_read(inode_block_index, buffer);
 
+	struct inode *inode = buffer;
+	printf("block buffer before memcpy: %d\n", *inode);
+
 	//update buffer at offset with our inode
 	memcpy(buffer+offset, inode, sizeof(struct inode));
 	
+	struct inode *after = buffer;
+	printf("block buffer after memcpy: %d\n", *after);
 
 	// Step 3: Write inode to disk 
 	bio_write(inode_block_index, buffer);
