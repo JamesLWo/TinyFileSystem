@@ -674,7 +674,7 @@ static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, o
 	int retval = get_node_by_path(path, 0, inode);
 	printf("get node by path returned %d\n", retval);
 	if (retval < 0){
-		return ENOENT;
+		return -ENOENT;
 	}
 	int i;
 
@@ -737,7 +737,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	int retval = get_node_by_path(parent_directory_path, 0, &parent_inode);
 	if (retval < 0) {
 		printf("dir not found\n");
-		return ENOENT;
+		return -ENOENT;
 	}
 	printf("check if basename already exists inside parent\n");
 	// Step 3: Call get_avail_ino() to get an available inode number
@@ -789,7 +789,7 @@ static int tfs_rmdir(const char *path) {
 	int retval = get_node_by_path(path, 0, &target_directory_inode);
 	if(retval < 0){
 		printf("target directory not found \n");
-		return ENOENT;
+		return -ENOENT;
 	}
 
 	//clear data block bitmap of target directory
@@ -853,23 +853,39 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	printf("splitting path...\n");
 	printf("path passed in: %s\n", path);
 	char* basename = strrchr(path, '/');
-	int length_of_parent_directory_name = basename - path;
-	basename += 1;
-	char* dirname = malloc(length_of_parent_directory_name + 1);
+	struct inode parent_inode;
+	char* dirname;
+	//case where path starts from root dir, i.e. path = /file
+	if(basename == path){
+		dirname = "/";
+		//get inode of parent directory which is root 
+		readi(0, &parent_inode);
+	}
+	//file is not directly under root
+	else {
+		int length_of_parent_directory_name = basename - path;
+		
+		char* dirname = malloc(length_of_parent_directory_name + 1);
+		memcpy(dirname, path, length_of_parent_directory_name);
+		dirname[length_of_parent_directory_name+1] = '\0';
+		// Step 2: Call get_node_by_path() to get inode of parent directory
+		int retval = get_node_by_path(dirname, 0, &parent_inode);
+		if (retval < 0) {
+			printf("dir not found\n");
+			return -ENOENT;
+		}
+	}
 
+	
+	//truncate basename by 1
+	basename += 1;
 	//copy /foo/bar into dirname
-	memcpy(dirname, path, length_of_parent_directory_name);
-	dirname[length_of_parent_directory_name+1] = '\0';
 	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
 	// if absolute path is /foo/bar/tmp, basename will be "/tmp" after strrchr
 	
-	// Step 2: Call get_node_by_path() to get inode of parent directory
-	struct inode parent_inode;
-	int retval = get_node_by_path(dirname, 0, &parent_inode);
-	if (retval < 0) {
-		printf("dir not found\n");
-		return ENOENT;
-	}
+	
+	
+	
 	
 	// Step 3: Call get_avail_ino() to get an available inode number
 	int new_inode_number = get_avail_ino();
@@ -1090,7 +1106,7 @@ static int tfs_unlink(const char *path) {
 	int retval = get_node_by_path(path, 0, &target_inode);
 	if (retval < 0) {
 		printf("inode not found\n");
-		return ENOENT;
+		return -ENOENT;
 	}
 	// Step 3: Clear data block bitmap of target file
 	int i;
@@ -1114,7 +1130,7 @@ static int tfs_unlink(const char *path) {
 	retval = get_node_by_path(dirname, 0, &parent_inode);
 	if (retval < 0) {
 		printf("inode not found\n");
-		return ENOENT;
+		return -ENOENT;
 	}
 	
 	// Step 6: Call dir_remove() to remove directory entry of target file in its parent directory
