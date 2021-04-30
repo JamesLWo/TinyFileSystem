@@ -85,13 +85,18 @@ int get_avail_blkno() {
  * inode operations
  */
 int readi(uint16_t ino, struct inode *inode) {
-	
+	printf("----------------------------\n");
+	printf("entered readi\n");
   // Step 1: Get the inode's on-disk block number
   int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
+  printf("number of inodes per block: %d\n", inodes_per_block);
   int inode_block_index = superblock->i_start_blk + ino / inodes_per_block;
+	printf("block number: %d\n", inode_block_index);
+
   
   // Step 2: Get offset of the inode in the inode on-disk block
   int offset = ino % inodes_per_block;
+  printf("offset = %d from %d mod %d\n", offset, ino, inodes_per_block);
   void* buffer = malloc(BLOCK_SIZE);
   // Step 3: Read the block from disk and then copy into inode structure
   bio_read(inode_block_index, buffer);
@@ -100,13 +105,17 @@ int readi(uint16_t ino, struct inode *inode) {
 }
 
 int writei(uint16_t ino, struct inode *inode) {
-
+	printf("----------------------------\n");
+	printf("entered writei\n");
 	// Step 1: Get the block number where this inode resides on disk
 	int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
+	printf("number of inodes per block: %d\n", inodes_per_block);
 	int inode_block_index = superblock->i_start_blk + ino / inodes_per_block;
+	printf("block number: %d\n", inode_block_index);
 
 	// Step 2: Get the offset in the block where this inode resides on disk
 	int offset = ino % inodes_per_block;
+	printf("offset = %d from %d mod %d\n", offset, ino, inodes_per_block);
 
 	void* buffer = malloc(BLOCK_SIZE);
 	bio_read(inode_block_index, buffer);
