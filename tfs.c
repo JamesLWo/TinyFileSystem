@@ -126,10 +126,15 @@ int writei(uint16_t ino, struct inode *inode) {
  * directory operations
  */
 int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *dirent) {
-
+	printf("----------------------\n");
+	printf("entered dir_find\n");
+	printf("ino: %d\n, fname: %s\n, name_len: %d\n", ino, fname, name_len);
     // Step 1: Call readi() to get the inode using ino (inode number of current directory)
+
+	printf("reading directory inode...\n")
 	struct inode dir_inode;
 	readi(ino, &dir_inode);
+	printf("read directory inode: %d\n", dir_inode.ino);
 	//Step 2: iterate over every dirent and find if matches
 	int i;
 	int foundDir = -1;
@@ -138,7 +143,9 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for(i = 0; i < 16; i++){
 		int current_data_block_index = dir_inode.direct_ptr[i];
+		printf("current datablock index at dir_inode.direct_ptr[%d]: %d", i, current_data_block_index);
 		if(current_data_block_index == -1){
+			printf("reached end of valid data blocks\n");
 			break;
 		}
 		
@@ -190,7 +197,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	
 	if (dir_find(dir_inode.ino, fname, strlen(fname), NULL) == 0){ 
 		printf("Cannot dir_add, duplicate detected\n");
-		return EEXIST;
+		return -EEXIST;
 	}
 	
 	// Step 1: Read dir_inode's data block and check each directory entry of dir_inode
