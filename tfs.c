@@ -131,7 +131,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 	printf("ino: %d\n, fname: %s\n, name_len: %d\n", ino, fname, name_len);
     // Step 1: Call readi() to get the inode using ino (inode number of current directory)
 
-	printf("reading directory inode...\n")
+	printf("reading directory inode...\n");
 	struct inode dir_inode;
 	readi(ino, &dir_inode);
 	printf("read directory inode: %d\n", dir_inode.ino);
