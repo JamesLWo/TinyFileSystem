@@ -370,6 +370,8 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
  * namei operation
  */
 int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
+	printf("---------------------------------------\n");
+	printf("get node by path called\n");
 	//ignore the first character, which is '/'
 	const char* truncatedPath = path+1;
 	int i;
@@ -390,7 +392,11 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	char* directory_name = malloc(index);
 	memcpy(directory_name, truncatedPath, index);
 
+	printf("path passed in: %s\n", path);
+	printf("name of directory: %s\n", directory_name);
+
 	//get the inode of the directory 
+	printf("reading inode for ino %d...\n", ino);
 	struct inode current_inode;
 	readi(ino, &current_inode);
 
@@ -398,6 +404,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for (i = 0; i < 16; i++){
 		int current_data_block_index = current_inode.direct_ptr[i];
+		printf("looking at data block %d...\n", current_data_block_index);
 		if(current_data_block_index == -1){
 			break;
 		}
@@ -544,6 +551,7 @@ int tfs_mkfs() {
 	struct inode root_inode;
 	root_inode.ino = 0; //0 as 'well-known' ino
 	root_inode.type = 0; //0 for directory, 0 for file
+	memcpy(root_inode.direct_ptr, -1, sizeof(int) * 16);
 	printf("Verifying root_inode.ino: %d should be 0, root_inode.type: %d should be 0\n", root_inode.ino, root_inode.type);
 
 	//write to disk
@@ -733,8 +741,6 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 
 	// Step 4: Call dir_add() to add directory entry of target directory to parent directory
 	printf("calling dir_add to add this dirent to the parent directory \n");
-
-	
 	dir_add(parent_inode, new_inode_number, basename, strlen(basename));
 
 	//make new inode for directory
@@ -876,9 +882,10 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	new_inode.size = 1;
 	new_inode.valid = 1;
 	memset(new_inode.direct_ptr, -1, sizeof(int)*16);
-	printf("updating parent inode\n");
-	parent_inode.link++;
-	parent_inode.size += new_inode.size;
+
+	//printf("updating parent inode\n");
+	//parent_inode.link++;
+	//parent_inode.size += new_inode.size;
 
 	// Step 6: Call writei() to write inode to disk
 	printf("writing inode...\n");
