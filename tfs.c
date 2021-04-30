@@ -630,7 +630,7 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 	int ret_val = get_node_by_path(path, 0, &target_inode);
 	if(ret_val < 0){
 		printf("file not found\n");
-		return ENOENT;
+		return -ENOENT;
 	}
 
 	// Step 2: fill attribute of file into stbuf from inode
