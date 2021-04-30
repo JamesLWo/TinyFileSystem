@@ -304,7 +304,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	
 
 	// Write directory entry
-	if(found_data_block_number){
+	if(found_data_block_number > 0){
 		bio_write(found_data_block_number, found_block);
 	}
 	else{
