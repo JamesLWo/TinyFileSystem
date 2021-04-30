@@ -551,7 +551,7 @@ int tfs_mkfs() {
 	struct inode root_inode;
 	root_inode.ino = 0; //0 as 'well-known' ino
 	root_inode.type = 0; //0 for directory, 0 for file
-	memcpy(root_inode.direct_ptr, -1, sizeof(int) * 16);
+	memset(root_inode.direct_ptr, -1, sizeof(int) * 16);
 	printf("Verifying root_inode.ino: %d should be 0, root_inode.type: %d should be 0\n", root_inode.ino, root_inode.type);
 
 	//write to disk
