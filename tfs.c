@@ -121,13 +121,13 @@ int writei(uint16_t ino, struct inode *inode) {
 	bio_read(inode_block_index, buffer);
 
 	struct inode *before = buffer;
-	printf("block buffer before memcpy: %d\n", *before);
+	printf("block buffer before memcpy: %d\n", before->ino);
 
 	//update buffer at offset with our inode
 	memcpy(buffer+offset, inode, sizeof(struct inode));
 	
 	struct inode *after = buffer;
-	printf("block buffer after memcpy: %d\n", *after);
+	printf("block buffer after memcpy: %d\n", after->ino);
 
 	// Step 3: Write inode to disk 
 	bio_write(inode_block_index, buffer);
@@ -600,13 +600,13 @@ int tfs_mkfs() {
 	void *tempbuffer = malloc(BLOCK_SIZE);
 	bio_read(3, tempbuffer);
 	struct inode* before = tempbuffer;
-	printf("buffer before writei: %d\n", *before);
+	printf("buffer before writei: %d\n", before->ino);
 
 	writei(root_inode.ino, &root_inode);
 	
 	bio_read(3, tempbuffer);
 	struct inode* after = tempbuffer;
-	printf("buffer after writei: %d\n", *after);
+	printf("buffer after writei: %d\n", after->ino);
 	printf("write successful\n");
 	
 	printf("---------------------------------------\n");
