@@ -267,8 +267,11 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		printf("did not find available data block for new directory entry\n");
 		//new data block created
 		int j = 0;
+		printf("getting available block num...\n");
 		new_data_block_number = get_avail_blkno();
+		printf("new block number: %d\n", new_data_block_number);
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
+			printf("populating block with a dirent...\n");
 			//fill new data block with invalid dirents 
 			struct dirent new_dirent;
 			new_dirent.valid = -1;
@@ -290,6 +293,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		for(a = 0; a < 16; a++){
 			if(dir_inode.direct_ptr[a] == -1){
 				dir_inode.direct_ptr[a] = new_data_block_number;
+				printf("dir_inode.direct_ptr[%d] = %d\n", a, dir_inode.direct_ptr[a]);
 				break;
 			}
 		}
@@ -305,9 +309,11 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 
 	// Write directory entry
 	if(found_data_block_number > 0){
+		printf("writing to existing data block %d...\n", found_data_block_number);
 		bio_write(found_data_block_number, found_block);
 	}
 	else{
+		printf("writing to a new data block %d...\n", new_data_block_number);
 		bio_write(new_data_block_number, new_data_block);
 	}
 	
