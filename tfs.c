@@ -120,13 +120,13 @@ int writei(uint16_t ino, struct inode *inode) {
 	void* buffer = malloc(BLOCK_SIZE);
 	bio_read(inode_block_index, buffer);
 
-	struct inode *before = buffer;
+	struct inode *before = buffer + (offset*sizeof(struct inode));
 	printf("block buffer before memcpy: %d\n", before->ino);
 
 	//update buffer at offset with our inode
 	memcpy(buffer + (offset*sizeof(struct inode)), inode, sizeof(struct inode));
 	
-	struct inode *after = buffer;
+	struct inode *after = buffer + (offset*sizeof(struct inode));
 	printf("block buffer after memcpy: %d\n", after->ino);
 
 	// Step 3: Write inode to disk 
@@ -278,7 +278,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	void* new_data_block = malloc(BLOCK_SIZE);
 	int new_data_block_number= -1;
 	//if we ended up not finding a invalid dirent in the available data blocks, find a new data block
-	
+
 	if (found_data_block_number == -1){ 
 		printf("did not find available data block for new directory entry\n");
 		//new data block created
