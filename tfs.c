@@ -128,8 +128,8 @@ int writei(uint16_t ino, struct inode *inode) {
 int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *dirent) {
 
     // Step 1: Call readi() to get the inode using ino (inode number of current directory)
-	struct inode *dir_inode = malloc(sizeof(*dir_inode));
-	readi(ino, dir_inode);
+	struct inode dir_inode;
+	readi(ino, &dir_inode);
 	//Step 2: iterate over every dirent and find if matches
 	int i;
 	int foundDir = -1;
@@ -137,7 +137,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 	//allocate space for current data block being read
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for(i = 0; i < 16; i++){
-		int current_data_block_index = dir_inode->direct_ptr[i];
+		int current_data_block_index = dir_inode.direct_ptr[i];
 		if(current_data_block_index == -1){
 			break;
 		}
@@ -169,7 +169,6 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 			break;
 		}
 	}
-	free(dir_inode);
 	free(current_data_block);
 	if(foundDir){
 		//we found the dirent
@@ -296,6 +295,8 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	}
 	
 	//we also have to write the updated inode table 
+
+	free(current_data_block);
 
 
 	return 0;
