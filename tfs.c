@@ -193,12 +193,15 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 }
 
 int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t name_len) {
+	printf("-------------------\n");
+	printf("entered dir_add\n");
 	//if the dirent already exists, return -1
 	
 	if (dir_find(dir_inode.ino, fname, strlen(fname), NULL) == 0){ 
 		printf("Cannot dir_add, duplicate detected\n");
 		return -EEXIST;
 	}
+	printf("dirent does not exist, okay to add\n");
 	
 	// Step 1: Read dir_inode's data block and check each directory entry of dir_inode
 	
@@ -213,17 +216,22 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	void* current_data_block = malloc(BLOCK_SIZE);
 	int z = 0;
 	for (z = 0; z < 16; z++){
+		printf("checking directptr[%d]]\n", z);
 		//check if directptr[j] has enough space for our directory. if so, add using offset
 		//we also know directptr[j] refers to a data block that only has dirents, we just want a dirent that has valid = 0
 
 		//as soon as we see a -1, we know that we've already considered all available data blocks
 		if(dir_inode.direct_ptr[z] == -1){
+			printf("no blocks available\n");
 			break;
 		}
 		bio_read(dir_inode.direct_ptr[z], current_data_block);
 		int j = 0;
+	
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
+			
 			void* address_of_dir_entry = current_data_block + j;
+			printf("current address of dir entry: %d\n", address_of_dir_entry);
 			struct dirent current_entry;
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 
@@ -256,6 +264,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	int new_data_block_number= -1;
 	//if we ended up not finding a invalid dirent in the available data blocks, find a new data block
 	if (found_data_block_number == -1){ 
+		printf("did not find available data block for new directory entry\n");
 		//new data block created
 		int j = 0;
 		new_data_block_number = get_avail_blkno();
@@ -274,6 +283,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		int i = 0;
 		while(i < name_len){
 			first_dirent->name[i] = *(fname + i);
+			i++;
 		}
 		//add the new block index to the directptr array
 		int a;
