@@ -859,7 +859,7 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 
 	//copy /foo/bar into dirname
 	memcpy(dirname, path, length_of_parent_directory_name);
-	//dirname[length_of_parent_directory_name+1] = '\0';
+	dirname[length_of_parent_directory_name+1] = '\0';
 	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
 	// if absolute path is /foo/bar/tmp, basename will be "/tmp" after strrchr
 	
