@@ -390,7 +390,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 
 	//get name of directory 
 	char* directory_name = malloc(index);
-	memcpy(directory_name, truncatedPath, index);
+	memcpy(directory_name, truncatedPath, index+1);
 
 	printf("path passed in: %s\n", path);
 	printf("name of directory: %s\n", directory_name);
@@ -626,7 +626,10 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 
 	struct inode target_inode;
 	printf("getting inode for path %s\n", path);
-	get_node_by_path(path, 0, &target_inode);
+	int ret_val = get_node_by_path(path, 0, &target_inode);
+	if(ret_val < 0){
+		return -1;
+	}
 
 	// Step 2: fill attribute of file into stbuf from inode
 
