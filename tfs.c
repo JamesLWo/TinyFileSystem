@@ -332,8 +332,8 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 				//make the inode invalid and update inode bitmap
 				struct inode inode;
 				readi(current_entry.ino, &inode);
-				inode->valid = -1;
-				unset_bitmap(inode_bitmap, inode->ino);
+				inode.valid = -1;
+				unset_bitmap(inode_bitmap, inode.ino);
 
 				//write bitmaps to disk
 				bio_write(superblock->i_bitmap_blk, inode_bitmap);
@@ -782,7 +782,7 @@ static int tfs_rmdir(const char *path) {
 	int retval = get_node_by_path(path, 0, &target_directory_inode);
 	if(retval < 0){
 		printf("target directory not found \n");
-		return ENOENT:
+		return ENOENT;
 	}
 
 	//clear data block bitmap of target directory
@@ -857,7 +857,7 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	
 	// Step 2: Call get_node_by_path() to get inode of parent directory
 	struct inode parent_inode;
-	int retval = get_node_by_path(parent_directory_path, 0, &parent_inode);
+	int retval = get_node_by_path(dirname, 0, &parent_inode);
 	if (retval < 0) {
 		printf("dir not found\n");
 		return ENOENT;
@@ -943,7 +943,7 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 		beginning++;
 
 	}
-
+	int i;
 	for(i = beginning; i <= end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
 		bio_read(target_file_inode.direct_ptr[i], current_block);
@@ -1015,7 +1015,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		beginning++;
 
 	}
-
+	int i;
 	for(i = beginning; i <= end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
 		int block_number = target_file_inode.direct_ptr[i];
@@ -1090,7 +1090,7 @@ static int tfs_unlink(const char *path) {
 		if(current_data_block_number == -1){
 			break;
 		}
-		unset_bitmap(data_region_bitmap, current_data_block_number)
+		unset_bitmap(data_region_bitmap, current_data_block_number);
 	}
 	bio_write(2, data_region_bitmap);
 
@@ -1102,14 +1102,14 @@ static int tfs_unlink(const char *path) {
 	
 	// Step 5: Call get_node_by_path() to get inode of parent directory
 	struct inode parent_inode;
-	int retval = get_node_by_path(dirname, 0, &parent_inode);
+	retval = get_node_by_path(dirname, 0, &parent_inode);
 	if (retval < 0) {
 		printf("inode not found\n");
 		return ENOENT;
 	}
 	
 	// Step 6: Call dir_remove() to remove directory entry of target file in its parent directory
-	dir_remove(parent_directory_inode, basename, strlen(basename));
+	dir_remove(parent_inode, basename, strlen(basename));
 
 	return 0;
 }
