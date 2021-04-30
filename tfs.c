@@ -930,6 +930,8 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	new_inode.valid = 1;
 	memset(new_inode.direct_ptr, -1, sizeof(int)*16);
 
+	printf("new inode info\nino: %d\n link: %d\n type: %d\n size: %d\n valid: %d\n", new_inode.ino, new_inode.link, new_inode.type, new_inode.size, new_inode.valid);
+
 	//printf("updating parent inode\n");
 	//parent_inode.link++;
 	//parent_inode.size += new_inode.size;
