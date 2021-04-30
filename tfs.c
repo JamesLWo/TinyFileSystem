@@ -912,7 +912,7 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 
 	// Step 1: You could call get_node_by_path() to get inode from path
 	struct inode target_file_inode;
-	get_node_by_path(path, &target_file_inode);
+	get_node_by_path(path, 0, &target_file_inode);
 	
 	// Step 2: Based on size and offset, read its data blocks from disk
 	int start_block_index = offset / BLOCK_SIZE;
@@ -1095,7 +1095,7 @@ static int tfs_unlink(const char *path) {
 	bio_write(2, data_region_bitmap);
 
 	// Step 4: Clear inode bitmap and its data block
-	unset_bitmap(inode_bitmap, target_directory_inode.ino);
+	unset_bitmap(inode_bitmap, target_inode.ino);
 	target_inode.valid = -1;
 	writei(target_inode.ino, &target_inode);
 	bio_write(1, inode_bitmap);
