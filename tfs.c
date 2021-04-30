@@ -594,12 +594,14 @@ int tfs_mkfs() {
 	printf("writing root_inode to block...\n");
 	void *tempbuffer = malloc(BLOCK_SIZE);
 	bio_read(3, tempbuffer);
-	printf("buffer before writei: %d\n", (int) *tempbuffer);
-	
+	struct inode* temp = tempbuffer;
+	printf("buffer before writei: %d\n", *temp);
+
 	writei(root_inode.ino, &root_inode);
 	
 	bio_read(3, tempbuffer);
-	printf("buffer after writei: %d\n", (int) *tempbuffer);
+	temp = tempbuffer;
+	printf("buffer after writei: %d\n", *temp);
 	printf("write successful\n");
 	
 	printf("---------------------------------------\n");
