@@ -128,7 +128,7 @@ int writei(uint16_t ino, struct inode *inode) {
 int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *dirent) {
 	printf("----------------------\n");
 	printf("entered dir_find\n");
-	printf("ino: %d\n, fname: %s\n, name_len: %d\n", ino, fname, name_len);
+	printf("ino: %d\n fname: %s\n name_len: %d\n", ino, fname, name_len);
     // Step 1: Call readi() to get the inode using ino (inode number of current directory)
 
 	printf("reading directory inode...\n");
@@ -143,7 +143,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for(i = 0; i < 16; i++){
 		int current_data_block_index = dir_inode.direct_ptr[i];
-		printf("current datablock index at dir_inode.direct_ptr[%d]: %d", i, current_data_block_index);
+		printf("current datablock index at dir_inode.direct_ptr[%d]: %d\n", i, current_data_block_index);
 		if(current_data_block_index == -1){
 			printf("reached end of valid data blocks\n");
 			break;
@@ -163,7 +163,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 					memcpy(dirent, address_of_dir_entry, sizeof(struct dirent));
 				}
 				//if name matches, we found the target directory entry
-				foundDir = 1;
+				foundDir = 0;
 				break;
 			}
 
@@ -177,7 +177,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 		}
 	}
 	free(current_data_block);
-	if(foundDir){
+	if(foundDir == 0){
 		//we found the dirent
 		return 0;
 	}
