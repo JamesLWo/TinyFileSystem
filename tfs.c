@@ -390,20 +390,17 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	memcpy(directory_name, truncatedPath, index);
 
 	//get the inode of the directory 
-	struct inode* current_inode = malloc(sizeof(*current_inode));
-	readi(ino, current_inode);
+	struct inode current_inode;
+	readi(ino, &current_inode);
 
 	int next_ino = -1;
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for (i = 0; i < 16; i++){
-		int current_data_block_index = current_inode->direct_ptr[i];
+		int current_data_block_index = current_inode.direct_ptr[i];
 		if(current_data_block_index == -1){
 			break;
 		}
-		//for this current data block, check if the foo dirent is in there
-		//get block from current_data_block_index on disk using bio_read
-
-		//data_node* block = get_data_block_at_index(current_data_block_index);
+		
 		bio_read(current_data_block_index, current_data_block);
 		int j = 0;
 		struct inode* inode_of_current_entry = malloc(sizeof(*inode_of_current_entry));
@@ -719,8 +716,6 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	parent_directory_path[length_of_parent_directory_name+1] = '\0';
 	printf("dirname: %s, truncated basename: %s\n", parent_directory_path, basename);
 
-
-	// if absolute path is /foo/bar/tmp, basename will be "/tmp" after strrchr
 
 	// Step 2: Call get_node_by_path() to get inode of parent directory
 	printf("calling getnodebypath() on %s\n", parent_directory_path);
