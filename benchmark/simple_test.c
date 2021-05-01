@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
 			exit(1);
 		}
 	}
+	printf("finished write, checking stat size...\n");
 	
 	fstat(fd, &st);
 	if (st.st_size != ITERS*BLOCKSIZE) {

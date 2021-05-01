@@ -1059,10 +1059,23 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 
 static int tfs_write(const char *path, const char *buffer, size_t size, off_t offset, struct fuse_file_info *fi) {
 	// Step 1: You could call get_node_by_path() to get inode from path
-
+	printf("-------------------------\n");
+	printf("entered tfs write\n");
+	printf("path: %s\n", path);
+	printf("buffer: %s\n", buffer);
+	printf("size: %d\n", size);
+	printf("offset: %d\n", offset);
 	struct inode target_file_inode;
 
-	get_node_by_path(path, 0, &target_file_inode);
+
+	printf("calling get node to see if file exists\n");
+	int ret_val = get_node_by_path(path, 0, &target_file_inode);
+	if(ret_val < 0){
+		printf("inode does not exist\n");
+		return -ENOENT;
+	}
+
+	printf("file found!\n");
 
 	int start_block_index = offset / BLOCK_SIZE;
 	int end_block_index = (offset+size) / BLOCK_SIZE;
@@ -1070,7 +1083,8 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	int bytes_written = 0;
 
 	int beginning = start_block_index;
-
+	printf("first block: %d\n", start_block_index);
+	printf("last block: %d\n", end_block_index);
 	void* current_block = malloc(BLOCK_SIZE);
 	if(offset % BLOCK_SIZE != 0){
 		//calculate offset for middle of page
