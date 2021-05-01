@@ -39,10 +39,11 @@ int main(int argc, char **argv) {
 		memset(buf, 0x61 + i, BLOCKSIZE);
 
 		if (write(fd, buf, BLOCKSIZE) != BLOCKSIZE) {
+			printf("ITERATION %d FAILED\n", i);
 			printf("TEST 2: File write failure \n");
 			exit(1);
 		}
-		printf("iteration %d succeeded\n", i);
+		printf("ITERATION %d SUCCEEDED\n", i);
 	}
 	printf("finished write, checking stat size...\n");
 	
