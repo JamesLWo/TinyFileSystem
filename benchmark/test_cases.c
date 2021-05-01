@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 		printf("TEST 7: Directory remove failure \n");
 		exit(1);
 	}
-	
+
 
 	if (opendir(TESTDIR "/files") != NULL) {
 		perror("opendir");
@@ -167,13 +167,17 @@ int main(int argc, char **argv) {
 		memset(buf, 0x61 + i % 26, BLOCKSIZE);
 
 		if (write(fd, buf, BLOCKSIZE) != BLOCKSIZE) {
+			printf("ITERATION %d FAILED\n", i);
+			printf("bytes written does not match BLOCKSIZE\n");
 			printf("TEST 9: Large file write failure \n");
 			exit(1);
 		}
+		printf("ITERATION %d SUCCEEDED\n", i);
 	}
 	
 	fstat(fd, &st);
 	if (st.st_size != ITERS_LARGE*BLOCKSIZE) {
+		printf("st.st_size does not match iters_large*blksize\n");
 		printf("TEST 9: Large file write failure \n");
 		exit(1);
 	}
