@@ -260,7 +260,9 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 				int i = 0;
 				while(i < name_len){
 					current_entry.name[i] = *(fname + i);
+					i++;
 				}
+				current_entry.name[i] = '\0';				
 				
 				//save info about the found data block
 				found_data_block_number = dir_inode.direct_ptr[z] + superblock->d_start_blk;
@@ -306,6 +308,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			first_dirent->name[i] = *(fname + i);
 			i++;
 		}
+		first_dirent->name[i] = '\0';
 		//add the new block index to the directptr array
 		int a;
 		for(a = 0; a < 16; a++){
