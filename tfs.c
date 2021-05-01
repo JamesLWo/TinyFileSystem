@@ -475,6 +475,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 				//dirent is found, and we're at the end of filepath
 				memcpy(inode, inode_of_current_entry, sizeof(struct inode));
 				free(inode_of_current_entry);
+				printf("Found target inode! Get node by path returning...\n");
 				return 0;
 			} 
 			//found it, have another directory to go into
@@ -704,7 +705,7 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 
 	printf("inode attributes filled in\n");
 	printf("---------------------------------------\n");
-	return 0;
+	return stbuf->st_mode;
 	
 }
 
