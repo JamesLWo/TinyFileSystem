@@ -89,18 +89,20 @@ int readi(uint16_t ino, struct inode *inode) {
 	printf("entered readi for ino: %d\n", ino);
   // Step 1: Get the inode's on-disk block number
   int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
-  printf("number of inodes per block: %d\n", inodes_per_block);
+  //printf("number of inodes per block: %d\n", inodes_per_block);
   int inode_block_index = superblock->i_start_blk + ino / inodes_per_block;
-	printf("block number: %d\n", inode_block_index);
+	//printf("block number: %d\n", inode_block_index);
 
   
   // Step 2: Get offset of the inode in the inode on-disk block
   int offset = ino % inodes_per_block;
-  printf("offset = %d from %d mod %d\n", offset, ino, inodes_per_block);
+  //printf("offset = %d from %d mod %d\n", offset, ino, inodes_per_block);
   void* buffer = malloc(BLOCK_SIZE);
   // Step 3: Read the block from disk and then copy into inode structure
   bio_read(inode_block_index, buffer);
   memcpy(inode, buffer+(offset*sizeof(struct inode)), sizeof(struct inode));
+  printf("readi finished\n");
+  printf("-------------\n");
   return 0;
 }
 
@@ -462,6 +464,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 
 			
 			readi(current_entry.ino, inode_of_current_entry);
+			printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n", current_entry.ino, current_entry.valid, current_entry.name);
 
 			//checking if we found it and that we're done
 			if(strcmp(directory_name, current_entry.name) == 0 && strstr(truncatedPath, "/") == NULL){
