@@ -456,6 +456,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 		int j = 0;
 		struct inode* inode_of_current_entry = malloc(sizeof(*inode_of_current_entry));
 		while(j+sizeof(struct dirent) < BLOCK_SIZE){
+			printf("current offset: %d\n", j);
 			//go through each dirent in the current block
 			//void* address_of_dir_entry = block->data + j;
 			void* address_of_dir_entry = current_data_block + j;
@@ -464,7 +465,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 
 			
 			readi(current_entry.ino, inode_of_current_entry);
-			printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n", current_entry.ino, current_entry.valid, current_entry.name);
+			printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n ", inode_of_current_entry.ino, inode_of_current_entry.valid, inode_of_current_entry.name);
 
 			//checking if we found it and that we're done
 			if(strcmp(directory_name, current_entry.name) == 0 && strstr(truncatedPath, "/") == NULL){
