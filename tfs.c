@@ -506,23 +506,26 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 			
 			printf("memory compare difference: %d\n", memcmp(directory_name, current_entry.name, index+1));
 			//checking if we found it and that we're done
-			if(memcmp(directory_name, current_entry.name, index+1) == 0 && strstr(truncatedPath, "/") == NULL){
-				//dirent is found, and we're at the end of filepath
-				memcpy(inode, inode_of_current_entry, sizeof(struct inode));
-				free(inode_of_current_entry);
-				printf("Found target inode! Get node by path returning...\n");
-				return 0;
-			} 
-			//found it, have another directory to go into
-			else if(memcmp(directory_name, current_entry.name, index+1) == 0 && inode_of_current_entry->type < 1){
-				printf("found dirent but need to recurse further\n");
-				//dirent is found
-				next_ino = current_entry.ino;
-				printf("next ino number: %d\n", next_ino);
-				break;
-				
+
+			//current directory entry has to be valid
+			if(current_entry.valid == 1){
+				//directory entry name has to match
+				if(memcmp(directory_name, current_entry.name, index+1) == 0 && strstr(truncatedPath, "/") == NULL){
+					//dirent is found, and we're at the end of filepath
+					memcpy(inode, inode_of_current_entry, sizeof(struct inode));
+					free(inode_of_current_entry);
+					printf("Found target inode! Get node by path returning...\n");
+					return 0;
+				} 
+				//found it, have another directory to go into
+				else if(memcmp(directory_name, current_entry.name, index+1) == 0 && inode_of_current_entry->type < 1){
+					printf("found dirent but need to recurse further\n");
+					//dirent is found
+					next_ino = current_entry.ino;
+					printf("next ino number: %d\n", next_ino);
+					break;				
+				}
 			}
-			
 			
 			j = j + sizeof(struct dirent);
 		}
