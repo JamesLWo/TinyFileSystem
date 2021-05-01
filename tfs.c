@@ -248,21 +248,23 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			
 			void* address_of_dir_entry = current_data_block + j;
-			printf("current address of dir entry: %d\n", address_of_dir_entry);
-			struct dirent* current_entry = malloc(sizeof(*current_entry));
+			printf("current address of dir entry: %p\n", address_of_dir_entry);
+			struct dirent current_entry;
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
+			printf("copied dirent into current_entry\n");
 
-			if(current_entry->valid == 0){
+			if(current_entryvalid == 0){
+				printf("found an invalid dirent\n");
 				//not valid, we found an unoccupied one
-				current_entry->valid = 1;
-				current_entry->ino = f_ino;
-				current_entry->len = name_len;
+				current_entry.valid = 1;
+				current_entry.ino = f_ino;
+				current_entry.len = name_len;
 				int i = 0;
 				while(i < name_len){
-					current_entry->name[i] = *(fname + i);
+					current_entry.name[i] = *(fname + i);
 					i++;
 				}
-				current_entry->name[i] = '\0';				
+				current_entry.name[i] = '\0';				
 				
 				//save info about the found data block
 				found_data_block_number = dir_inode.direct_ptr[z] + superblock->d_start_blk;
@@ -272,7 +274,6 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 
 			j = j + sizeof(struct dirent);
 			
-			free(current_entry);
 		}
 		if(found_data_block_number){
 			break;
