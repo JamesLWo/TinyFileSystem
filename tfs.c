@@ -175,7 +175,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 			struct dirent current_entry;
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 
-			if(memcmp(fname, current_entry.name, name_len) == 0){
+			if(memcmp(fname, current_entry.name, name_len) == 0 && current_entry.valid == 1){
 				if(dirent != NULL){ //if we're calling dir_find for dir_remove/dir_add, don't copy anything
 					memcpy(dirent, address_of_dir_entry, sizeof(struct dirent));
 				}
