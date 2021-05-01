@@ -110,13 +110,13 @@ int main(int argc, char **argv) {
 
 	/* TEST 7: directory remove test */
 	if ((ret = rmdir(TESTDIR "/files")) < 0) {
-		perror("mkdir");
+		perror("rmdir");
 		printf("TEST 7: Directory remove failure \n");
 		exit(1);
 	}
 
 	if (opendir(TESTDIR "/files") != NULL) {
-		perror("mkdir");
+		perror("opendir");
 		printf("TEST 7: Directory remove failure \n");
 		exit(1);
 	}
