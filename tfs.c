@@ -296,7 +296,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			struct dirent new_dirent;
 			new_dirent.valid = -1;
 			new_dirent.ino = -1;
-			new_dirent.name = "\0";
+			new_dirent.name[0] = '\0';
 			new_dirent.len = -1;
 
 			memcpy(new_data_block + j, &new_dirent, sizeof(struct dirent));
