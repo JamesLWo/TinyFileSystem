@@ -42,6 +42,7 @@ int main(int argc, char **argv) {
 			printf("TEST 2: File write failure \n");
 			exit(1);
 		}
+		printf("iteration %d succeeded\n", i);
 	}
 	printf("finished write, checking stat size...\n");
 	
