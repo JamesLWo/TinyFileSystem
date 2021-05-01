@@ -848,6 +848,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 			return -ENOENT;
 		}
 	}
+	printf("successfully retrieved parent inode\n");
 	basename += 1;
 	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
 	// Step 3: Call get_avail_ino() to get an available inode number
