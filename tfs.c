@@ -970,6 +970,7 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	new_inode.link = 0;
 	new_inode.type = 1; //file
 	new_inode.size = 0;
+	new_inode.vstat.st_size = 0;
 	new_inode.valid = 1;
 	memset(new_inode.direct_ptr, -1, sizeof(int)*16);
 
