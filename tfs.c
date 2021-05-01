@@ -1160,6 +1160,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 
 	// Step 4: Update the inode info and write it to disk
 	target_file_inode.size += bytes_written;
+	printf("updated size of file: %d\n", target_file_inode.size);
 	writei(target_file_inode.ino, &target_file_inode);
 
 
