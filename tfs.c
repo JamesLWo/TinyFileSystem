@@ -694,10 +694,16 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 
 	// Step 2: fill attribute of file into stbuf from inode
 
-	stbuf->st_mode   = S_IFDIR | 0755;
-	stbuf->st_nlink  = 2;
+	if (target_inode.type == 0){ //dir
+		stbuf->st_mode   = S_IFDIR | 0755;
+		stbuf->st_nlink  = 2;
+	}
+	else{ //file
+		stbuf->st_mode   = S_IFREG | 0644;
+		stbuf->st_nlink  = 1;
+	}
+	
 	time(&stbuf->st_mtime);
-
 
 	//more attributes to fill in to stbuf
 	stbuf->st_blksize = BLOCK_SIZE;
@@ -705,7 +711,7 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 
 	printf("inode attributes filled in\n");
 	printf("---------------------------------------\n");
-	return stbuf->st_mode;
+	return 0;
 	
 }
 
