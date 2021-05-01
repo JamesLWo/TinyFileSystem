@@ -467,7 +467,6 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	//get name of directory 
 	char* directory_name = malloc(index+1);
 	memcpy(directory_name, truncatedPath, index+1);
-	directory_name[index] = '\0';
 	printf("path passed in: %s\n", path);
 	printf("name of directory: %s\n", directory_name);
 
