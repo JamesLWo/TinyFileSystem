@@ -830,7 +830,6 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 		dirname = "/";
 		//get inode of parent directory which is root 
 		readi(0, &parent_inode);
-		printf("dirname: %s, truncated basename: %s\n", dirname, basename);
 	}
 	//file is not directly under root
 	else {
@@ -849,7 +848,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 		}
 	}
 	printf("successfully retrieved parent inode\n");
-	basename += 1;
+	//basename += 1;
 	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
 	// Step 3: Call get_avail_ino() to get an available inode number
 	int new_inode_number = get_avail_ino();
