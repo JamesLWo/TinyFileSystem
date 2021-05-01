@@ -53,7 +53,7 @@ int get_avail_ino() {
 	// Step 3: Update inode bitmap and write to disk 
 	set_bitmap(inode_bitmap, avail);
 	bio_write(superblock->i_bitmap_blk, inode_bitmap);
-	return avail;
+	return avail+superblock->i_start_blk;
 }
 
 /* 
@@ -78,7 +78,7 @@ int get_avail_blkno() {
 	// Step 3: Update data block bitmap and write to disk 
 	set_bitmap(data_region_bitmap, avail);
 	bio_write(superblock->d_bitmap_blk, data_region_bitmap);
-	return avail;
+	return avail+superblock->d_start_blk;
 }
 
 /* 
