@@ -448,7 +448,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	for (i = 0; i < 16; i++){
 		int current_data_block_index = superblock->d_start_blk + current_inode.direct_ptr[i];
 		printf("looking at data block %d...\n", current_data_block_index);
-		if(current_data_block_index == -1){
+		if(current_inode.direct_ptr[i] == -1){
 			break;
 		}
 		
