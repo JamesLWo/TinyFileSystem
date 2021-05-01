@@ -338,6 +338,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 
 	// Update directory inode
 	dir_inode.size += sizeof(struct dirent);
+	dir_inode.vstat.st_size += sizeof(struct dirent);
 	//update link here
 	dir_inode.link += 1;
 	//update stat here
@@ -413,6 +414,8 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 				//write inode block to disk
 				writei(current_entry.ino, &inode);
 				dir_inode.link--;
+				dir_inode.size -= sizeof(struct dirent));
+				dir_inode.vstat.st_size -= sizeof(struct dirent));
 				writei(dir_inode.ino, &dir_inode);
 			
 				
@@ -886,85 +889,6 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	return 0;
 }
 
-static int tfs_rmdir(const char *path) {
-	printf("-----------------------------\n");
-	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
-	printf("entered tfs_rmdir\n");
-	printf("splitting path...\n");
-	printf("path passed in: %s\n", path);
-	char* basename = strrchr(path, '/');
-	char* dirname;
-	//case where path starts from root dir, i.e. path = /file
-	if(basename == path){
-		dirname = "/";
-	}
-	//file is not directly under root
-	else {
-		int length_of_parent_directory_name = basename - path;
-		char* dirname = malloc(length_of_parent_directory_name + 1);
-		memcpy(dirname, path, length_of_parent_directory_name);
-		dirname[length_of_parent_directory_name+1] = '\0';
-	}
-	//truncate basename by 1
-	basename += 1;
-	//copy /foo/bar into dirname
-	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
-	// if absolute path is /foo/bar/tmp, basename will be "/tmp" after strrchr
-
-
-	//get target directory inode 
-	struct inode target_directory_inode;
-	int retval = get_node_by_path(path, 0, &target_directory_inode);
-	if(retval < 0){
-		printf("target directory not found \n");
-		return -ENOENT;
-	}
-
-	//clear data block bitmap of target directory
-	int i;
-	for(i = 0; i < 16; i++){
-		int data_block_to_clear = target_directory_inode.direct_ptr[i];
-		if(data_block_to_clear == -1){
-			break;
-		}
-		unset_bitmap(data_region_bitmap, data_block_to_clear);
-	}
-	bio_write(2, data_region_bitmap);
-
-	//clear inode bitmap for target directory inode 
-	unset_bitmap(inode_bitmap, target_directory_inode.ino);
-	bio_write(1, inode_bitmap);
-
-	//clear inodes data block
-	target_directory_inode.valid = 0;
-	writei(target_directory_inode.ino, &target_directory_inode);
-
-
-	//remove the directory entry corresponding to the target directory inside the parent directory
-	struct inode parent_directory_inode;
-	//Call get_node_by_path() to get inode of parent directory
-	retval = get_node_by_path(dirname, 0, &parent_directory_inode);
-	if (retval < 0) {
-		printf("dir not found\n");
-		return -ENOENT;
-	}
-	dir_remove(parent_directory_inode, basename, strlen(basename));
-	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
-
-	// Step 2: Call get_node_by_path() to get inode of target directory
-	
-
-	// Step 3: Clear data block bitmap of target directory
-
-	// Step 4: Clear inode bitmap and its data block
-
-	// Step 5: Call get_node_by_path() to get inode of parent directory
-
-	// Step 6: Call dir_remove() to remove directory entry of target directory in its parent directory
-
-	return 0;
-}
-
 static int tfs_releasedir(const char *path, struct fuse_file_info *fi) {
 	// For this project, you don't need to fill this function
 	// But DO NOT DELETE IT!
@@ -1237,11 +1161,87 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	printf("updated size of file in disk: %d\n", target_file_inode.size);
 	printf("updated size of file from vstat indisk : %d\n", target_file_inode.vstat.st_size);
 
-
-
-
 	// Note: this function should return the amount of bytes you write to disk
 	return bytes_written;
+}
+
+static int tfs_rmdir(const char *path) {
+	printf("-----------------------------\n");
+	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
+	printf("entered tfs_rmdir\n");
+	printf("splitting path...\n");
+	printf("path passed in: %s\n", path);
+	char* basename = strrchr(path, '/');
+	char* dirname;
+	//case where path starts from root dir, i.e. path = /file
+	if(basename == path){
+		dirname = "/";
+	}
+	//file is not directly under root
+	else {
+		int length_of_parent_directory_name = basename - path;
+		char* dirname = malloc(length_of_parent_directory_name + 1);
+		memcpy(dirname, path, length_of_parent_directory_name);
+		dirname[length_of_parent_directory_name+1] = '\0';
+	}
+	//truncate basename by 1
+	basename += 1;
+	//copy /foo/bar into dirname
+	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
+	// if absolute path is /foo/bar/tmp, basename will be "/tmp" after strrchr
+
+
+	//get target directory inode 
+	struct inode target_directory_inode;
+	int retval = get_node_by_path(path, 0, &target_directory_inode);
+	if(retval < 0){
+		printf("target directory not found \n");
+		return -ENOENT;
+	}
+
+	//clear data block bitmap of target directory
+	int i;
+	for(i = 0; i < 16; i++){
+		int data_block_to_clear = target_directory_inode.direct_ptr[i];
+		if(data_block_to_clear == -1){
+			break;
+		}
+		unset_bitmap(data_region_bitmap, data_block_to_clear);
+	}
+	bio_write(2, data_region_bitmap);
+
+	//clear inode bitmap for target directory inode 
+	unset_bitmap(inode_bitmap, target_directory_inode.ino);
+	bio_write(1, inode_bitmap);
+
+	//clear inodes data block
+	target_directory_inode.valid = 0;
+	writei(target_directory_inode.ino, &target_directory_inode);
+
+
+	//remove the directory entry corresponding to the target directory inside the parent directory
+	struct inode parent_directory_inode;
+	//Call get_node_by_path() to get inode of parent directory
+	retval = get_node_by_path(dirname, 0, &parent_directory_inode);
+	if (retval < 0) {
+		printf("dir not found\n");
+		return -ENOENT;
+	}
+	dir_remove(parent_directory_inode, basename, strlen(basename));
+	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
+
+	// Step 2: Call get_node_by_path() to get inode of target directory
+	
+
+	// Step 3: Clear data block bitmap of target directory
+
+	// Step 4: Clear inode bitmap and its data block
+
+	// Step 5: Call get_node_by_path() to get inode of parent directory
+
+	// Step 6: Call dir_remove() to remove directory entry of target directory in its parent directory
+
+	return 0;
 }
 
 static int tfs_unlink(const char *path) {
