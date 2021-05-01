@@ -165,8 +165,9 @@ int main(int argc, char **argv) {
 	for (i = 0; i < ITERS_LARGE; i++) {
 		//memset with some random data
 		memset(buf, 0x61 + i % 26, BLOCKSIZE);
-
-		if (write(fd, buf, BLOCKSIZE) != BLOCKSIZE) {
+		int bytes_written = write(fd, buf, BLOCKSIZE);
+		printf("bytes written: %d\n", bytes_written);
+		if (bytes_written != BLOCKSIZE) {
 			printf("ITERATION %d FAILED\n", i);
 			printf("bytes written does not match BLOCKSIZE\n");
 			printf("TEST 9: Large file write failure \n");
