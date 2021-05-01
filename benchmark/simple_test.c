@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
 	
 	fstat(fd, &st);
 	if (st.st_size != ITERS*BLOCKSIZE) {
+		printf("actual size is %d\n", st.st_size);
 		printf("TEST 2: File write failure \n");
 		exit(1);
 	}
