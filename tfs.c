@@ -1096,7 +1096,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	int i;
 	for(i = beginning; i <= end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
-		int block_number = target_file_inode.direct_ptr[i]->superblock->d_start_blk;
+		int block_number = target_file_inode.direct_ptr[i]+superblock->d_start_blk;
 		if(block_number == -1){
 			int new_block_number = get_avail_blkno();
 			target_file_inode.direct_ptr[i] = new_block_number;
