@@ -817,9 +817,11 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	printf("-----------------------------\n");
 	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 	printf("entered tfs_mkdir\n");
+	printf("path: %s\n", path);
 	printf("splitting path...\n");
 	
 	char* basename = strrchr(path, '/');
+	printf("basename before truncating: %s\n", basename);
 	struct inode parent_inode;
 	char* dirname;
 	
@@ -837,8 +839,9 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 		char* dirname = malloc(length_of_parent_directory_name + 1);
 		memcpy(dirname, path, length_of_parent_directory_name);
 		dirname[length_of_parent_directory_name+1] = '\0';
-		
+		printf("dirname: %s\n", dirname);
 		// Step 2: Call get_node_by_path() to get inode of parent directory
+		printf("retrieving inode of parent dir\n");
 		int retval = get_node_by_path(dirname, 0, &parent_inode);
 		if (retval < 0) {
 			printf("dir not found\n");
