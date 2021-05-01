@@ -114,6 +114,7 @@ int main(int argc, char **argv) {
 		printf("TEST 7: Directory remove failure \n");
 		exit(1);
 	}
+	
 
 	if (opendir(TESTDIR "/files") != NULL) {
 		perror("opendir");
