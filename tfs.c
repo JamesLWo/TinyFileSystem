@@ -53,7 +53,7 @@ int get_avail_ino() {
 	// Step 3: Update inode bitmap and write to disk 
 	set_bitmap(inode_bitmap, avail);
 	bio_write(superblock->i_bitmap_blk, inode_bitmap);
-	return avail+superblock->i_start_blk;
+	return avail;
 }
 
 /* 
@@ -78,7 +78,7 @@ int get_avail_blkno() {
 	// Step 3: Update data block bitmap and write to disk 
 	set_bitmap(data_region_bitmap, avail);
 	bio_write(superblock->d_bitmap_blk, data_region_bitmap);
-	return avail+superblock->d_start_blk;
+	return avail;
 }
 
 /* 
@@ -157,7 +157,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 	//allocate space for current data block being read
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for(i = 0; i < 16; i++){
-		int current_data_block_index = dir_inode.direct_ptr[i];
+		int current_data_block_index = superblock->d_start_blk + dir_inode.direct_ptr[i];
 		printf("current datablock index at dir_inode.direct_ptr[%d]: %d\n", i, current_data_block_index);
 		if(current_data_block_index == -1){
 			printf("reached end of valid data blocks\n");
@@ -240,7 +240,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			printf("no blocks available\n");
 			break;
 		}
-		bio_read(dir_inode.direct_ptr[z], current_data_block);
+		bio_read(dir_inode.direct_ptr[z] + superblock->d_start_blk, current_data_block);
 		int j = 0;
 	
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
@@ -261,7 +261,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 				}
 				
 				//save info about the found data block
-				found_data_block_number = dir_inode.direct_ptr[z];
+				found_data_block_number = dir_inode.direct_ptr[z] + superblock->d_start_blk;
 				found_block = current_data_block;
 				break;
 			}
@@ -332,7 +332,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	}
 	else{
 		printf("writing to a new data block %d...\n", new_data_block_number);
-		bio_write(new_data_block_number, new_data_block);
+		bio_write(new_data_block_number + superblock->d_start_blk, new_data_block);
 	}
 	
 	//we also have to write the updated inode table 
@@ -353,7 +353,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 	void* current_data_block = malloc(BLOCK_SIZE);
 	int i;
 	for(i = 0; i < 16; i++){
-		int current_data_block_index = dir_inode.direct_ptr[i];
+		int current_data_block_index = superblock->d_start_blk + dir_inode.direct_ptr[i];
 		if(current_data_block_index == -1){
 			break;
 		}
@@ -444,7 +444,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	int next_ino = -1;
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for (i = 0; i < 16; i++){
-		int current_data_block_index = current_inode.direct_ptr[i];
+		int current_data_block_index = superblock->d_start_blk + current_inode.direct_ptr[i];
 		printf("looking at data block %d...\n", current_data_block_index);
 		if(current_data_block_index == -1){
 			break;
@@ -579,6 +579,7 @@ int tfs_mkfs() {
 	bio_write(2, data_region_bitmap);
 	printf("successfully wrote data bitmap to disk\n");
 
+	
 	
 
 	// update bitmap information for root directory
@@ -730,7 +731,7 @@ static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, o
 
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for(i = 0; i < 16; i++){
-		int current_data_block_index = inode->direct_ptr[i];
+		int current_data_block_index = inode->direct_ptr[i] + superblock->d_start_blk;
 		if(current_data_block_index == -1){
 			break;
 		}
@@ -1005,7 +1006,7 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 		int block_offset = offset % BLOCK_SIZE;
 
 		int remaining_block_room = BLOCK_SIZE - block_offset;
-		bio_read(target_file_inode.direct_ptr[beginning], current_block);
+		bio_read(target_file_inode.direct_ptr[beginning] + superblock->d_start_blk, current_block);
 
 		if(size <= remaining_block_room){
 			
@@ -1023,7 +1024,7 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 	int i;
 	for(i = beginning; i <= end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
-		bio_read(target_file_inode.direct_ptr[i], current_block);
+		bio_read(target_file_inode.direct_ptr[i]+superblock->d_start_blk, current_block);
 
 		if(remaining_bytes <= BLOCK_SIZE){
 			memcpy(buffer+bytes_written, current_block, remaining_bytes);
@@ -1063,7 +1064,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 
 		int remaining_block_room = BLOCK_SIZE - block_offset;
 
-		int block_number = target_file_inode.direct_ptr[beginning];
+		int block_number = target_file_inode.direct_ptr[beginning]+superblock->d_start_blk;
 		//if this block has not been made yet, allocate a new block
 		if(block_number == -1){
 			int new_block_number = get_avail_blkno();
@@ -1095,7 +1096,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	int i;
 	for(i = beginning; i <= end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
-		int block_number = target_file_inode.direct_ptr[i];
+		int block_number = target_file_inode.direct_ptr[i]->superblock->d_start_blk;
 		if(block_number == -1){
 			int new_block_number = get_avail_blkno();
 			target_file_inode.direct_ptr[i] = new_block_number;
