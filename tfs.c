@@ -1089,9 +1089,9 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		int block_number = target_file_inode.direct_ptr[beginning]+superblock->d_start_blk;
 		//if this block has not been made yet, allocate a new block
 		if(target_file_inode.direct_ptr[beginning] == -1){
-			int new_block_number = get_avail_blkno();
+			int new_block_number = get_avail_blkno() + superblock->d_start_blk;
 			target_file_inode.direct_ptr[beginning] = new_block_number;
-			set_bitmap(data_region_bitmap, new_block_number);
+			//set_bitmap(data_region_bitmap, get_avail_blkno);
 			block_number = new_block_number;
 
 
@@ -1120,9 +1120,9 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		int remaining_bytes = size - bytes_written;
 		int block_number = target_file_inode.direct_ptr[i]+superblock->d_start_blk;
 		if(target_file_inode.direct_ptr[i] == -1){
-			int new_block_number = get_avail_blkno();
+			int new_block_number = get_avail_blkno() + superblock->d_start_blk;
 			target_file_inode.direct_ptr[i] = new_block_number;
-			set_bitmap(data_region_bitmap, new_block_number);
+			//set_bitmap(data_region_bitmap, new_block_number);
 			block_number = new_block_number;
 
 
