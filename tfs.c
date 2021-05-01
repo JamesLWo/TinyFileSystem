@@ -85,8 +85,8 @@ int get_avail_blkno() {
  * inode operations
  */
 int readi(uint16_t ino, struct inode *inode) {
-	printf("----------------------------\n");
-	printf("entered readi for ino: %d\n", ino);
+	//printf("----------------------------\n");
+	//printf("entered readi for ino: %d\n", ino);
   // Step 1: Get the inode's on-disk block number
   int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
   //printf("number of inodes per block: %d\n", inodes_per_block);
@@ -101,40 +101,40 @@ int readi(uint16_t ino, struct inode *inode) {
   // Step 3: Read the block from disk and then copy into inode structure
   bio_read(inode_block_index, buffer);
   memcpy(inode, buffer+(offset*sizeof(struct inode)), sizeof(struct inode));
-  printf("readi finished\n");
-  printf("-------------\n");
+  //printf("readi finished\n");
+  //printf("-------------\n");
   return 0;
 }
 
 int writei(uint16_t ino, struct inode *inode) {
-	printf("----------------------------\n");
-	printf("entered writei\n");
+	//printf("----------------------------\n");
+	//printf("entered writei\n");
 	// Step 1: Get the block number where this inode resides on disk
 	int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
-	printf("number of inodes per block: %d\n", inodes_per_block);
+	//printf("number of inodes per block: %d\n", inodes_per_block);
 	int inode_block_index = superblock->i_start_blk + ino / inodes_per_block;
-	printf("block number: %d\n", inode_block_index);
+	//printf("block number: %d\n", inode_block_index);
 
 	// Step 2: Get the offset in the block where this inode resides on disk
 	int offset = ino % inodes_per_block;
-	printf("offset = %d from %d mod %d\n", offset, ino, inodes_per_block);
+	//printf("offset = %d from %d mod %d\n", offset, ino, inodes_per_block);
 
 	void* buffer = malloc(BLOCK_SIZE);
 	bio_read(inode_block_index, buffer);
 
 	struct inode *before = buffer + (offset*sizeof(struct inode));
-	printf("block buffer before memcpy: %d\n", before->ino);
+	//printf("block buffer before memcpy: %d\n", before->ino);
 
 	//update buffer at offset with our inode
 	memcpy(buffer + (offset*sizeof(struct inode)), inode, sizeof(struct inode));
 	
 	struct inode *after = buffer + (offset*sizeof(struct inode));
-	printf("block buffer after memcpy: %d\n", after->ino);
+	//printf("block buffer after memcpy: %d\n", after->ino);
 
 	// Step 3: Write inode to disk 
 	bio_write(inode_block_index, buffer);
-	printf("finished writei\n");
-	printf("-------------------------\n");
+	//printf("finished writei\n");
+	//printf("-------------------------\n");
 	return 0;
 }
 
