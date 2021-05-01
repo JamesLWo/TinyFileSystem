@@ -501,6 +501,8 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 			printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n", current_entry.ino, current_entry.valid, current_entry.name);
 			printf("inode type: %d\n", inode_of_current_entry->type);
 			printf("checking: %s == %s\n", directory_name, current_entry.name);
+			
+			printf("string compare difference: %d\n", strcmp(directory_name, current_entry.name));
 			//checking if we found it and that we're done
 			if(strcmp(directory_name, current_entry.name) == 0 && strstr(truncatedPath, "/") == NULL){
 				//dirent is found, and we're at the end of filepath
