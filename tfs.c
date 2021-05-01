@@ -691,6 +691,9 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 		printf("file not found\n");
 		return -ENOENT;
 	}
+	printf("ino: %d\n", target_inode.ino);
+	printf("size of inode: %d\n", target_inode.size);
+	printf("size of inode from vstat: %d\n", target_inode.vstat.st_size);
 
 	// Step 2: fill attribute of file into stbuf from inode
 
@@ -1160,6 +1163,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 
 	// Step 4: Update the inode info and write it to disk
 	target_file_inode.size += bytes_written;
+	target_file_inode.vstat.st_size += bytes_written;
 	printf("updated size of file: %d\n", target_file_inode.size);
 	writei(target_file_inode.ino, &target_file_inode);
 	readi(target_file_inode.ino, &target_file_inode);
