@@ -798,7 +798,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 		dirname = "/";
 		//get inode of parent directory which is root 
 		readi(0, &parent_inode);
-		printf("dirname: %s, truncated basename: %s\n", parent_directory_path, basename);
+		printf("dirname: %s, truncated basename: %s\n", dirname, basename);
 	}
 	//file is not directly under root
 	else {
