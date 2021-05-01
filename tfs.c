@@ -465,7 +465,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 
 			
 			readi(current_entry.ino, inode_of_current_entry);
-			printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n ", inode_of_current_entry->ino, inode_of_current_entry->valid, inode_of_current_entry->name);
+			printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n ", current_entry.ino, current_entry.valid, current_entry.name);
 
 			//checking if we found it and that we're done
 			if(strcmp(directory_name, current_entry.name) == 0 && strstr(truncatedPath, "/") == NULL){
