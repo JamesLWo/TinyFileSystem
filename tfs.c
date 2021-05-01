@@ -298,16 +298,18 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			new_dirent.ino = -1;
 			new_dirent.name[0] = '\0';
 			new_dirent.len = -1;
-
+			printf("new_dirent.valid = %d\nnew_dirent.ino=%d\nnew_dirent.name=%s\nnew_dirent.len=%d\n", new_dirent.valid, new_dirent.ino, new_dirent.name, new_dirent.len);
 			memcpy(new_data_block + j, &new_dirent, sizeof(struct dirent));
+			
+
 			struct dirent assert;
 			memcpy(&assert, new_data_block + j, sizeof(struct dirent));
-			printf("Checking dirent at address %d to add\n", new_data_block + j);
-			printf("assert.valid = %d\nassert.ino=%d\nassert.name=%s\nassert.len=%d\n", assert.valid, assert.ino, assert.name, assert.len);
+			//printf("Checking dirent at address %d to add\n", new_data_block + j);
+			//printf("assert.valid = %d\nassert.ino=%d\nassert.name=%s\nassert.len=%d\n", assert.valid, assert.ino, assert.name, assert.len);
 			j = j + sizeof(struct dirent);
 		}
 		//set first dirent to valid
-		struct dirent* first_dirent = new_data_block;
+		struct dirent* first_dirent = (struct dirent*) new_data_block;
 		first_dirent->valid = 0;
 		first_dirent->ino = f_ino;
 		first_dirent->len = name_len;
@@ -344,8 +346,16 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		bio_write(found_data_block_number, found_block);
 	}
 	else{
+
+		int j = 0;
+		while(j + sizeof(struct dirent) < BLOCK_SIZE){
+			struct dirent* copied_dirent = (struct dirent *)(new_data_block + j);
+			printf("copied dirent's validity: %d\n", copied_dirent->valid);
+			j = j + sizeof(struct dirent);
+		}
 		printf("writing to a new data block %d...\n", new_data_block_number);
 		bio_write(new_data_block_number + superblock->d_start_blk, new_data_block);
+		
 	}
 	
 	//we also have to write the updated inode table 
