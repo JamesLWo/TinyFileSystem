@@ -1165,9 +1165,14 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	target_file_inode.size += bytes_written;
 	target_file_inode.vstat.st_size += bytes_written;
 	printf("updated size of file: %d\n", target_file_inode.size);
+	printf("updated size of file from vstat : %d\n", target_file_inode.vstat.st_size);
+
+
 	writei(target_file_inode.ino, &target_file_inode);
 	readi(target_file_inode.ino, &target_file_inode);
 	printf("updated size of file in disk: %d\n", target_file_inode.size);
+	printf("updated size of file from vstat indisk : %d\n", target_file_inode.vstat.st_size);
+
 
 
 
