@@ -1089,7 +1089,9 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		int block_number = target_file_inode.direct_ptr[beginning]+superblock->d_start_blk;
 		//if this block has not been made yet, allocate a new block
 		if(target_file_inode.direct_ptr[beginning] == -1){
+			printf("need to allocate new block\n");
 			int new_block_number = get_avail_blkno() + superblock->d_start_blk;
+			printf("generated block num: %d\n", new_block_number);
 			target_file_inode.direct_ptr[beginning] = new_block_number;
 			//set_bitmap(data_region_bitmap, get_avail_blkno);
 			block_number = new_block_number;
@@ -1098,29 +1100,33 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		}
 		//if block already exists 
 		else{
+			printf("block exists with num %d, reading from block\n", block_number);
 			bio_read(block_number, current_block);
 		}
 
 		if(size <= remaining_block_room){
-			
+			printf("remaining size fits into block\n");
 			memcpy(current_block+ block_offset, buffer, size);
 			bytes_written += size;
 		}
 		else{
+			printf("cannot fit all bytes in current block, writing what we can fit\n");
 			memcpy(current_block + block_offset, buffer, remaining_block_room);
 			bytes_written +=remaining_block_room;
 		}
 
+		printf("writing changes to disk\n");
 		bio_write(block_number, current_block);
 		beginning++;
-
 	}
 	int i;
 	for(i = beginning; i < end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
 		int block_number = target_file_inode.direct_ptr[i]+superblock->d_start_blk;
 		if(target_file_inode.direct_ptr[i] == -1){
+			printf("need to allocate new block\n");
 			int new_block_number = get_avail_blkno() + superblock->d_start_blk;
+			printf("generated block num: %d\n", new_block_number);
 			target_file_inode.direct_ptr[i] = new_block_number;
 			//set_bitmap(data_region_bitmap, new_block_number);
 			block_number = new_block_number;
@@ -1129,15 +1135,18 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		}
 		//if block already exists 
 		else{
+			printf("reading block %d\n", block_number);
 			bio_read(block_number, current_block);
 		}
 
 
 		if(remaining_bytes <= BLOCK_SIZE){
+			printf("can finish all of write in this block\n");
 			memcpy(current_block,buffer+bytes_written,  remaining_bytes);
 			bytes_written += remaining_bytes;
 		}
 		else{
+			printf("can't fit, need new block\n");
 			memcpy(current_block,buffer+bytes_written,  BLOCK_SIZE);
 			bytes_written += BLOCK_SIZE;
 		}
