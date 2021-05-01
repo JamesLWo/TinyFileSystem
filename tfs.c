@@ -414,8 +414,8 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 				//write inode block to disk
 				writei(current_entry.ino, &inode);
 				dir_inode.link--;
-				dir_inode.size -= sizeof(struct dirent));
-				dir_inode.vstat.st_size -= sizeof(struct dirent));
+				dir_inode.size -= sizeof(struct dirent);
+				dir_inode.vstat.st_size -= sizeof(struct dirent);
 				writei(dir_inode.ino, &dir_inode);
 			
 				
