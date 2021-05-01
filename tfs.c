@@ -249,20 +249,20 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			
 			void* address_of_dir_entry = current_data_block + j;
 			printf("current address of dir entry: %d\n", address_of_dir_entry);
-			struct dirent current_entry;
+			struct dirent* current_entry = malloc(sizeof(*current_entry));
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 
-			if(current_entry.valid == -1){
+			if(current_entry->valid == -1){
 				//not valid, we found an unoccupied one
-				current_entry.valid = 0;
-				current_entry.ino = f_ino;
-				current_entry.len = name_len;
+				current_entry->valid = 0;
+				current_entry->ino = f_ino;
+				current_entry->len = name_len;
 				int i = 0;
 				while(i < name_len){
-					current_entry.name[i] = *(fname + i);
+					current_entry->name[i] = *(fname + i);
 					i++;
 				}
-				current_entry.name[i] = '\0';				
+				current_entry->name[i] = '\0';				
 				
 				//save info about the found data block
 				found_data_block_number = dir_inode.direct_ptr[z] + superblock->d_start_blk;
@@ -272,7 +272,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 
 			j = j + sizeof(struct dirent);
 			
-
+			free(current_entry);
 		}
 		if(found_data_block_number){
 			break;
@@ -293,13 +293,13 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			printf("populating block with a dirent...\n");
 			//fill new data block with invalid dirents 
-			struct dirent new_dirent;
-			new_dirent.valid = -1;
-			new_dirent.ino = -1;
-			new_dirent.name[0] = '\0';
-			new_dirent.len = -1;
-			printf("new_dirent.valid = %d\nnew_dirent.ino=%d\nnew_dirent.name=%s\nnew_dirent.len=%d\n", new_dirent.valid, new_dirent.ino, new_dirent.name, new_dirent.len);
-			memcpy(new_data_block + j, &new_dirent, sizeof(struct dirent));
+			struct dirent* new_dirent = malloc(sizeof(*new_dirent));
+			new_dirent->valid = -1;
+			new_dirent->ino = -1;
+			new_dirent->name[0] = '\0';
+			new_dirent->len = 0;
+			printf("new_dirent valid = %d\nnew_dirent ino=%d\nnew_dirent name=%s\nnew_dirent len=%d\n", new_dirent->valid, new_dirent->ino, new_dirent->name, new_dirent->len);
+			memcpy(new_data_block + j, new_dirent, sizeof(struct dirent));
 			
 
 			struct dirent assert;
@@ -307,6 +307,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			//printf("Checking dirent at address %d to add\n", new_data_block + j);
 			//printf("assert.valid = %d\nassert.ino=%d\nassert.name=%s\nassert.len=%d\n", assert.valid, assert.ino, assert.name, assert.len);
 			j = j + sizeof(struct dirent);
+			free(new_dirent);
 		}
 		//set first dirent to valid
 		struct dirent* first_dirent = (struct dirent*) new_data_block;
