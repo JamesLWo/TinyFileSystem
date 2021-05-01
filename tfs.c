@@ -455,7 +455,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	//find the index of the first occurrence of '/'
 	for (i = 0; i < strlen(truncatedPath); i++){
 		if (truncatedPath[i] == '/'){
-			index = i;
+			index = i-1;
 			break;
 		}
 	}
