@@ -1057,6 +1057,9 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 	// Step 2: Based on size and offset, read its data blocks from disk
 	int start_block_index = offset / BLOCK_SIZE;
 	int end_block_index = (offset+size) / BLOCK_SIZE;
+	if((offset+size) % BLOCK_SIZE != 0){
+		end_block_index++;
+	}
 
 	int bytes_written = 0;
 
@@ -1084,7 +1087,7 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 
 	}
 	int i;
-	for(i = beginning; i <= end_block_index; i++){
+	for(i = beginning; i < end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
 		bio_read(target_file_inode.direct_ptr[i]+superblock->d_start_blk, current_block);
 
@@ -1127,6 +1130,9 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 
 	int start_block_index = offset / BLOCK_SIZE;
 	int end_block_index = (offset+size) / BLOCK_SIZE;
+	if((offset+size) % BLOCK_SIZE > 0){
+		end_block_index++;
+	}
 
 	int bytes_written = 0;
 
@@ -1170,7 +1176,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 
 	}
 	int i;
-	for(i = beginning; i <= end_block_index; i++){
+	for(i = beginning; i < end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
 		int block_number = target_file_inode.direct_ptr[i]+superblock->d_start_blk;
 		if(block_number == -1){
