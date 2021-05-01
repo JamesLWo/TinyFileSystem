@@ -905,7 +905,7 @@ static int tfs_rmdir(const char *path) {
 	//remove the directory entry corresponding to the target directory inside the parent directory
 	struct inode parent_directory_inode;
 	//Call get_node_by_path() to get inode of parent directory
-	int retval = get_node_by_path(dirname, 0, &parent_directory_inode);
+	retval = get_node_by_path(dirname, 0, &parent_directory_inode);
 	if (retval < 0) {
 		printf("dir not found\n");
 		return -ENOENT;
