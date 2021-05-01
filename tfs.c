@@ -966,7 +966,7 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	new_inode.ino = new_inode_number;
 	new_inode.link = 0;
 	new_inode.type = 1; //file
-	new_inode.size = 1;
+	new_inode.size = 0;
 	new_inode.valid = 1;
 	memset(new_inode.direct_ptr, -1, sizeof(int)*16);
 
@@ -1162,6 +1162,8 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	target_file_inode.size += bytes_written;
 	printf("updated size of file: %d\n", target_file_inode.size);
 	writei(target_file_inode.ino, &target_file_inode);
+	readi(target_file_inode.ino, &target_file_inode);
+	printf("updated size of file in disk: %d\n", target_file_inode.size);
 
 
 
