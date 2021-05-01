@@ -788,26 +788,35 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 	printf("entered tfs_mkdir\n");
 	printf("splitting path...\n");
+	
 	char* basename = strrchr(path, '/');
-	int length_of_parent_directory_name = basename - path;
-	basename += 1;
-	char* parent_directory_path = malloc(length_of_parent_directory_name + 1);
-
-	//copy /foo/bar into parent_directory_path
-	memcpy(parent_directory_path, path, length_of_parent_directory_name);
-	parent_directory_path[length_of_parent_directory_name+1] = '\0';
-	printf("dirname: %s, truncated basename: %s\n", parent_directory_path, basename);
-
-
-	// Step 2: Call get_node_by_path() to get inode of parent directory
-	printf("calling getnodebypath() on %s\n", parent_directory_path);
 	struct inode parent_inode;
-	int retval = get_node_by_path(parent_directory_path, 0, &parent_inode);
-	if (retval < 0) {
-		printf("dir not found\n");
-		return -ENOENT;
+	char* dirname;
+	
+	//case where path starts from root dir, i.e. path = /file
+	if(basename == path){
+		dirname = "/";
+		//get inode of parent directory which is root 
+		readi(0, &parent_inode);
+		printf("dirname: %s, truncated basename: %s\n", parent_directory_path, basename);
 	}
-	printf("check if basename already exists inside parent\n");
+	//file is not directly under root
+	else {
+		int length_of_parent_directory_name = basename - path;
+		
+		char* dirname = malloc(length_of_parent_directory_name + 1);
+		memcpy(dirname, path, length_of_parent_directory_name);
+		dirname[length_of_parent_directory_name+1] = '\0';
+		printf("dirname: %s, truncated basename: %s\n", dirname, basename);
+		// Step 2: Call get_node_by_path() to get inode of parent directory
+		int retval = get_node_by_path(dirname, 0, &parent_inode);
+		if (retval < 0) {
+			printf("dir not found\n");
+			return -ENOENT;
+		}
+	}
+	basename += 1;
+	
 	// Step 3: Call get_avail_ino() to get an available inode number
 	int new_inode_number = get_avail_ino();
 	printf("found available inode %d\n", new_inode_number);
@@ -822,7 +831,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	new_inode.ino = new_inode_number;
 	new_inode.link = 2;
 	new_inode.type = 0; //directory
-	new_inode.size = 1;
+	new_inode.size = 0;
 	new_inode.valid = 1;
 	memset(new_inode.direct_ptr, -1, sizeof(int)*16);
 
