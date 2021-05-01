@@ -293,7 +293,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			printf("populating block with a dirent...\n");
 			//fill new data block with invalid dirents 
-			struct dirent new_dirent;
+			struct dirent new_dirent = {-1, -1, "", 0};
 			//new_dirent->valid = -1;
 			//new_dirent->ino = -1;
 			//new_dirent->name[0] = '\0';
