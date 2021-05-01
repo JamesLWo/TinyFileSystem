@@ -499,7 +499,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 			
 			readi(current_entry.ino, inode_of_current_entry);
 			printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n ", current_entry.ino, current_entry.valid, current_entry.name);
-
+			printf("inode type: %d\n", inode_of_current_entry->type);
 			//checking if we found it and that we're done
 			if(strcmp(directory_name, current_entry.name) == 0 && strstr(truncatedPath, "/") == NULL){
 				//dirent is found, and we're at the end of filepath
@@ -510,8 +510,10 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 			} 
 			//found it, have another directory to go into
 			else if(strcmp(directory_name, current_entry.name) == 0 && inode_of_current_entry->type == 0){
+				printf("found dirent but need to recurse further\n");
 				//dirent is found
 				next_ino = current_entry.ino;
+				printf("next ino number: %d\n", next_ino);
 				break;
 				
 			}
@@ -529,7 +531,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	
 	free(current_data_block);
 	if (next_ino == -1){
-		return -1; //not found
+		return -ENOENT; //not found
 	}
 	//at this point, current_ino is set to be the inode number of foo
 	//but we also need to check if this current inode is another directory or a file
@@ -543,7 +545,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	char* substring = strstr(truncatedPath, "/");
 	retval = get_node_by_path(substring, next_ino, inode);
 	if (!retval) {
-		return -1; //file or dir not found
+		return -ENOENT; //file or dir not found
 	}
 	printf("Successfully found\n");
 	return 0; //found the elusive inode, stored inside *inode
