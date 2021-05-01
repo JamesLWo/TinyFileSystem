@@ -849,16 +849,29 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 }
 
 static int tfs_rmdir(const char *path) {
-	printf("---------------------------------------\n");
+	printf("-----------------------------\n");
+	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 	printf("entered tfs_rmdir\n");
-
+	printf("splitting path...\n");
+	printf("path passed in: %s\n", path);
 	char* basename = strrchr(path, '/');
-	int length_of_parent_directory_name = basename - path;
+	char* dirname;
+	//case where path starts from root dir, i.e. path = /file
+	if(basename == path){
+		dirname = "/";
+	}
+	//file is not directly under root
+	else {
+		int length_of_parent_directory_name = basename - path;
+		char* dirname = malloc(length_of_parent_directory_name + 1);
+		memcpy(dirname, path, length_of_parent_directory_name);
+		dirname[length_of_parent_directory_name+1] = '\0';
+	}
+	//truncate basename by 1
 	basename += 1;
-	char* parent_directory_path = malloc(length_of_parent_directory_name + 1);
-	memcpy(parent_directory_path, path, length_of_parent_directory_name);
-	parent_directory_path[length_of_parent_directory_name+1] = '\0';
-	printf("dirname: %s, truncated basename: %s\n", parent_directory_path, basename);
+	//copy /foo/bar into dirname
+	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
+	// if absolute path is /foo/bar/tmp, basename will be "/tmp" after strrchr
 
 
 	//get target directory inode 
@@ -891,16 +904,13 @@ static int tfs_rmdir(const char *path) {
 
 	//remove the directory entry corresponding to the target directory inside the parent directory
 	struct inode parent_directory_inode;
-	get_node_by_path(parent_directory_path, 0, &parent_directory_inode);
+	//Call get_node_by_path() to get inode of parent directory
+	int retval = get_node_by_path(dirname, 0, &parent_directory_inode);
+	if (retval < 0) {
+		printf("dir not found\n");
+		return -ENOENT;
+	}
 	dir_remove(parent_directory_inode, basename, strlen(basename));
-
-
-	
-
-
-
-
-
 	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 
 	// Step 2: Call get_node_by_path() to get inode of target directory
@@ -1195,23 +1205,34 @@ static int tfs_unlink(const char *path) {
 	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 	printf("entered tfs_unlink\n");
 	printf("splitting path...\n");
-	char* basename = strrchr(path, '/');
-	int length_of_parent_directory_name = basename - path;
-	basename += 1;
-	char* dirname = malloc(length_of_parent_directory_name + 1);
-
-	//copy /foo/bar into dirname
-	memcpy(dirname, path, length_of_parent_directory_name);
-	dirname[length_of_parent_directory_name+1] = '\0';
-	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
-
-	// Step 2: Call get_node_by_path() to get inode of target file
+	printf("path passed in: %s\n", path);
 	struct inode target_inode;
+	char* basename = strrchr(path, '/');
+	char* dirname;
+	//case where path starts from root dir, i.e. path = /file
+	if(basename == path){
+		dirname = "/";
+	}
+	//file is not directly under root
+	else {
+		int length_of_parent_directory_name = basename - path;
+		char* dirname = malloc(length_of_parent_directory_name + 1);
+		memcpy(dirname, path, length_of_parent_directory_name);
+		dirname[length_of_parent_directory_name+1] = '\0';
+	}
+	//truncate basename by 1
+	basename += 1;
+	//copy /foo/bar into dirname
+	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
+	// if absolute path is /foo/bar/tmp, basename will be "/tmp" after strrchr
+	
+	// Step 2: Call get_node_by_path() to get inode of target file
 	int retval = get_node_by_path(path, 0, &target_inode);
 	if (retval < 0) {
-		printf("inode not found\n");
+		printf("target_file inode not found\n");
 		return -ENOENT;
 	}
+
 	// Step 3: Clear data block bitmap of target file
 	int i;
 	for(i = 0; i < 16; i++){
@@ -1233,9 +1254,10 @@ static int tfs_unlink(const char *path) {
 	struct inode parent_inode;
 	retval = get_node_by_path(dirname, 0, &parent_inode);
 	if (retval < 0) {
-		printf("inode not found\n");
+		printf("parent inode not found\n");
 		return -ENOENT;
 	}
+	
 	
 	// Step 6: Call dir_remove() to remove directory entry of target file in its parent directory
 	dir_remove(parent_inode, basename, strlen(basename));
