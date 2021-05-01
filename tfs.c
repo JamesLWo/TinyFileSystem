@@ -295,7 +295,15 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			//fill new data block with invalid dirents 
 			struct dirent new_dirent;
 			new_dirent.valid = -1;
+			new_dirent.ino = -1;
+			new_dirent.name = "\0";
+			new_dirent.len = -1;
+
 			memcpy(new_data_block + j, &new_dirent, sizeof(struct dirent));
+			struct dirent assert;
+			memcpy(&assert, new_data_block + j, sizeof(struct dirent));
+			printf("Checking dirent at address %d to add\n", new_data_block + j);
+			printf("assert.valid = %d\nassert.ino=%d\nassert.name=%s\nassert.len=%d\n", assert.valid, assert.ino, assert.name, assert.len);
 			j = j + sizeof(struct dirent);
 		}
 		//set first dirent to valid
@@ -836,9 +844,9 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	memset(new_inode.direct_ptr, -1, sizeof(int)*16);
 
 	// Step 5: Update inode for target directory
-	printf("updating parent inode\n");
-	parent_inode.link++;
-	parent_inode.size += new_inode.size;
+	//printf("updating parent inode\n");
+	//parent_inode.link++;
+	//parent_inode.size += new_inode.size;
 
 	// Step 6: Call writei() to write inode to disk
 	printf("writing inode...\n");
