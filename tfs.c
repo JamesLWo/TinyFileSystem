@@ -546,7 +546,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	//get next file path "/foo/bar/a.txt" -> "/bar/a.txt"
 	char* substring = strstr(truncatedPath, "/");
 	retval = get_node_by_path(substring, next_ino, inode);
-	if (!retval) {
+	if (retval < 0) {
 		return -ENOENT; //file or dir not found
 	}
 	printf("Successfully found\n");
@@ -869,6 +869,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	new_inode.link = 2;
 	new_inode.type = 0; //directory
 	new_inode.size = 0;
+	new_inode.vstat.st_size = 0;
 	new_inode.valid = 1;
 	memset(new_inode.direct_ptr, -1, sizeof(int)*16);
 
