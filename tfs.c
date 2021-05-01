@@ -253,7 +253,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 			printf("copied dirent into current_entry\n");
 
-			if(current_entryvalid == 0){
+			if(current_entry.valid == 0){
 				printf("found an invalid dirent\n");
 				//not valid, we found an unoccupied one
 				current_entry.valid = 1;
