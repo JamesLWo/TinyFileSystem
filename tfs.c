@@ -252,9 +252,9 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			struct dirent* current_entry = malloc(sizeof(*current_entry));
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 
-			if(current_entry->valid == -1){
+			if(current_entry->valid == 0){
 				//not valid, we found an unoccupied one
-				current_entry->valid = 0;
+				current_entry->valid = 1;
 				current_entry->ino = f_ino;
 				current_entry->len = name_len;
 				int i = 0;
@@ -293,7 +293,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			printf("populating block with a dirent...\n");
 			//fill new data block with invalid dirents 
-			struct dirent new_dirent = {-1, -1, "", 0};
+			struct dirent new_dirent = {0, 0, "", 0};
 			//new_dirent->valid = -1;
 			//new_dirent->ino = -1;
 			//new_dirent->name[0] = '\0';
@@ -311,7 +311,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		}
 		//set first dirent to valid
 		struct dirent* first_dirent = (struct dirent*) new_data_block;
-		first_dirent->valid = 0;
+		first_dirent->valid = 1;
 		first_dirent->ino = f_ino;
 		first_dirent->len = name_len;
 		int i = 0;
@@ -392,13 +392,13 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 
 			if(strcmp(fname, current_entry.name) == 0){// found the dirent we want to remove
-				current_entry.valid = -1;
+				current_entry.valid = 0;
 				//clear data blocks 
 				//update data bitmap
 				//make the inode invalid and update inode bitmap
 				struct inode inode;
 				readi(current_entry.ino, &inode);
-				inode.valid = -1;
+				inode.valid = 0;
 				unset_bitmap(inode_bitmap, inode.ino);
 
 				//write bitmaps to disk
@@ -917,7 +917,7 @@ static int tfs_rmdir(const char *path) {
 	bio_write(1, inode_bitmap);
 
 	//clear inodes data block
-	target_directory_inode.valid = -1;
+	target_directory_inode.valid = 0;
 	writei(target_directory_inode.ino, &target_directory_inode);
 
 
@@ -1104,7 +1104,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	printf("-------------------------\n");
 	printf("entered tfs write\n");
 	printf("path: %s\n", path);
-	printf("buffer: %s\n", buffer);
+	//printf("buffer: %s\n", buffer);
 	printf("size: %d\n", size);
 	printf("offset: %d\n", offset);
 	struct inode target_file_inode;
@@ -1265,7 +1265,7 @@ static int tfs_unlink(const char *path) {
 
 	// Step 4: Clear inode bitmap and its data block
 	unset_bitmap(inode_bitmap, target_inode.ino);
-	target_inode.valid = -1;
+	target_inode.valid = 0;
 	writei(target_inode.ino, &target_inode);
 	bio_write(1, inode_bitmap);
 	
