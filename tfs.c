@@ -437,6 +437,12 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	printf("---------------------------------------\n");
 	printf("get node by path called\n");
+	//base case we call with path "/"
+	if (strcmp(path, "/") == 0){
+		printf("found root inode\n");
+		readi(0, inode);
+		return 0;
+	}
 	//ignore the first character, which is '/'
 	const char* truncatedPath = path+1;
 	int i;
