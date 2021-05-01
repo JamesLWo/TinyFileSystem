@@ -249,26 +249,29 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			
 			void* address_of_dir_entry = current_data_block + j;
 			printf("current address of dir entry: %p\n", address_of_dir_entry);
-			struct dirent current_entry;
-			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
+			//struct dirent current_entry;
+			struct dirent *current_entry = (struct dirent*) address_of_dir_entry;
+			//memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 			printf("copied dirent into current_entry\n");
 
-			if(current_entry.valid == 0){
+			if(current_entry->valid == 0){
 				printf("found an invalid dirent\n");
 				//not valid, we found an unoccupied one
-				current_entry.valid = 1;
-				current_entry.ino = f_ino;
-				current_entry.len = name_len;
+				current_entry->valid = 1;
+				current_entry->ino = f_ino;
+				current_entry->len = name_len;
 				int i = 0;
 				while(i < name_len){
-					current_entry.name[i] = *(fname + i);
+					current_entry->name[i] = *(fname + i);
 					i++;
 				}
-				current_entry.name[i] = '\0';				
+				current_entry->name[i] = '\0';				
 				
 				//save info about the found data block
 				found_data_block_number = dir_inode.direct_ptr[z] + superblock->d_start_blk;
 				found_block = current_data_block;
+				//memcpy(new_data_block + j, &new_dirent, sizeof(struct dirent));
+				memcpy(current_data_block + j, current_entry, sizeof(struct dirent));
 				break;
 			}
 
@@ -363,6 +366,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	//we also have to write the updated inode table 
 
 	free(current_data_block);
+	free(new_data_block);
 
 
 	return 0;
@@ -833,7 +837,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 		char* dirname = malloc(length_of_parent_directory_name + 1);
 		memcpy(dirname, path, length_of_parent_directory_name);
 		dirname[length_of_parent_directory_name+1] = '\0';
-		printf("dirname: %s, truncated basename: %s\n", dirname, basename);
+		
 		// Step 2: Call get_node_by_path() to get inode of parent directory
 		int retval = get_node_by_path(dirname, 0, &parent_inode);
 		if (retval < 0) {
@@ -842,7 +846,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 		}
 	}
 	basename += 1;
-	
+	printf("dirname: %s, truncated basename: %s\n", dirname, basename);
 	// Step 3: Call get_avail_ino() to get an available inode number
 	int new_inode_number = get_avail_ino();
 	printf("found available inode %d\n", new_inode_number);
