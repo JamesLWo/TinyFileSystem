@@ -869,7 +869,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 		int length_of_parent_directory_name = basename - path;
 		char* dirname = malloc(length_of_parent_directory_name + 1);
 		memcpy(dirname, path, length_of_parent_directory_name);
-		dirname[length_of_parent_directory_name+1] = '\0';
+		dirname[length_of_parent_directory_name] = '\0';
 		printf("dirname: %s\n", dirname);
 		// Step 2: Call get_node_by_path() to get inode of parent directory
 		printf("retrieving inode of parent dir\n");
@@ -941,7 +941,7 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 		
 		char* dirname = malloc(length_of_parent_directory_name + 1);
 		memcpy(dirname, path, length_of_parent_directory_name);
-		dirname[length_of_parent_directory_name+1] = '\0';
+		dirname[length_of_parent_directory_name] = '\0';
 		// Step 2: Call get_node_by_path() to get inode of parent directory
 		int retval = get_node_by_path(dirname, 0, &parent_inode);
 		if (retval < 0) {
@@ -1216,7 +1216,7 @@ static int tfs_rmdir(const char *path) {
 		int length_of_parent_directory_name = basename - path;
 		char* dirname = malloc(length_of_parent_directory_name + 1);
 		memcpy(dirname, path, length_of_parent_directory_name);
-		dirname[length_of_parent_directory_name+1] = '\0';
+		dirname[length_of_parent_directory_name] = '\0';
 	}
 	//truncate basename by 1
 	basename += 1;
@@ -1296,7 +1296,7 @@ static int tfs_unlink(const char *path) {
 		int length_of_parent_directory_name = basename - path;
 		char* dirname = malloc(length_of_parent_directory_name + 1);
 		memcpy(dirname, path, length_of_parent_directory_name);
-		dirname[length_of_parent_directory_name+1] = '\0';
+		dirname[length_of_parent_directory_name] = '\0';
 	}
 	//truncate basename by 1
 	basename += 1;
