@@ -85,13 +85,13 @@ int get_avail_blkno() {
  * inode operations
  */
 int readi(uint16_t ino, struct inode *inode) {
-	printf("----------------------------\n");
-	printf("entered readi for ino: %d\n", ino);
+	//printf("----------------------------\n");
+	//printf("entered readi for ino: %d\n", ino);
   // Step 1: Get the inode's on-disk block number
   int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
   //printf("number of inodes per block: %d\n", inodes_per_block);
   int inode_block_index = superblock->i_start_blk + ino / inodes_per_block;
-	printf("block number: %d\n", inode_block_index);
+	//printf("block number: %d\n", inode_block_index);
 
   
   // Step 2: Get offset of the inode in the inode on-disk block
