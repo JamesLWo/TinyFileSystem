@@ -456,6 +456,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	if (strcmp(path, "/") == 0){
 		printf("found root inode\n");
 		readi(0, inode);
+		printf("---------------------------------------\n");
 		return 0;
 	}
 	//ignore the first character, which is '/'
@@ -812,7 +813,7 @@ static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, o
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for(i = 0; i < 16; i++){
 		int current_data_block_index = inode->direct_ptr[i] + superblock->d_start_blk;
-		if(current_data_block_index == -1){
+		if(inode->direct_ptr[i] == -1){
 			break;
 		}
 		bio_read(current_data_block_index, current_data_block);
