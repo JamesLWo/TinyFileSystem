@@ -470,12 +470,13 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 			break;
 		}
 	}
-	//if we could not find one, end of filepath
+	//if we could not find one, end of filepath i.e /test
 	if (index == -1){
 		index = strlen(truncatedPath);
 	}
 
 	//get name of directory 
+	printf("index: %d\n", index);
 	char* directory_name = malloc(index+1);
 	memcpy(directory_name, truncatedPath, index);
 	directory_name[index+1] = '\0';
