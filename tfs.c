@@ -29,6 +29,7 @@ char diskfile_path[PATH_MAX];
 unsigned char* inode_bitmap = NULL;
 unsigned char* data_region_bitmap = NULL;
 struct superblock* superblock;
+pthread_mutex_t lock;
 
 
 
@@ -683,6 +684,10 @@ int tfs_mkfs() {
  * FUSE file operations
  */
 static void *tfs_init(struct fuse_conn_info *conn) {
+	printf("INITIALIZING MUTEX LOCK\n");
+	pthread_mutex_init(&lock, NULL);
+	printf("LOCKING MUTEX IN TFS_INIT\n");
+	pthread_mutex_lock(&lock);
 	printf("---------------------------------------\n");
 	printf("TFS INIT CALLED\n");
 	
@@ -721,10 +726,12 @@ static void *tfs_init(struct fuse_conn_info *conn) {
 		memcpy(data_region_bitmap, block_buffer, number_of_elements);
 		printf("read contents into data region bitmap from disk!\n");
 	}
+	
 
 	printf("TFS INIT COMPLETED\n");
 	printf("---------------------------------------\n");
-
+	printf("UNLOCKING MUTEX IN TFS INIT\n");
+	pthread_mutex_unlock(&lock);
 	return NULL;
 }
 
@@ -735,6 +742,8 @@ static void tfs_destroy(void *userdata) {
 	free(inode_bitmap); 
 	free(data_region_bitmap);
 	free(superblock);
+	printf("DESTROYING MUTEX\n");
+	pthread_mutex_destroy(&lock);
 	// Step 2: Close diskfile
 	printf("closing diskfile...\n");
 	dev_close();
@@ -743,6 +752,8 @@ static void tfs_destroy(void *userdata) {
 }
 
 static int tfs_getattr(const char *path, struct stat *stbuf) {
+	printf("LOCKING MUTEX IN TFS_GETATTR\n");
+	pthread_mutex_lock(&lock);
 	printf("---------------------------------------\n");
 	printf("entered tfs_getattr\n");
 	// Step 1: call get_node_by_path() to get inode from path
@@ -752,6 +763,8 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 	int ret_val = get_node_by_path(path, 0, &target_inode);
 	if(ret_val < 0){
 		printf("file not found\n");
+		printf("UNLOCKING MUTEX GETATTR\n");
+		pthread_mutex_unlock(&lock);
 		return -ENOENT;
 	}
 	printf("ino: %d\n", target_inode.ino);
@@ -777,11 +790,15 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 
 	printf("inode attributes filled in\n");
 	printf("---------------------------------------\n");
+	printf("RELEASING LOCK IN GETATTR\n");
+	pthread_mutex_unlock(&lock);
 	return 0;
 	
 }
 
 static int tfs_opendir(const char *path, struct fuse_file_info *fi) {
+	printf("LOCKING MUTEX IN OPENDIR\n");
+	pthread_mutex_lock(&lock);
 	printf("---------------------------------------\n");
 	printf("entered tfs_opendir\n");
 	struct inode* inode = malloc(sizeof(*inode));
@@ -789,8 +806,10 @@ static int tfs_opendir(const char *path, struct fuse_file_info *fi) {
 
 
 	printf("---------------------------------------\n");
-	return get_node_by_path(path, 0, inode);
-
+	int retval = get_node_by_path(path, 0, inode);
+	printf("UNLOCKING MUTEX IN OPENDIR\n");
+	pthread_mutex_unlock(&lock);
+	return retval;
 	// Step 1: Call get_node_by_path() to get inode from path
 	
 
@@ -800,6 +819,8 @@ static int tfs_opendir(const char *path, struct fuse_file_info *fi) {
 }
 
 static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi) {
+	printf("LOCKING MUTEX IN READDIR\n");
+	pthread_mutex_lock(&lock);
 	printf("---------------------------------------\n");
 	printf("entered tfs_readdir\n");
 	// Step 1: Call get_node_by_path() to get inode from path
@@ -808,6 +829,8 @@ static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, o
 	int retval = get_node_by_path(path, 0, inode);
 	printf("get node by path returned %d\n", retval);
 	if (retval < 0){
+		printf("UNLOCKING MUTEX IN READDIR\n");
+		pthread_mutex_unlock(&lock);
 		return -ENOENT;
 	}
 	int i;
@@ -845,13 +868,15 @@ static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, o
 
 	//iterate over every directptr block to find all dirents
 	//for every dirent found, call the filler function
-
-
+	printf("RELEASING LOCK IN READDIR\n");
+	pthread_mutex_unlock(&lock);
 	return 0;
 }
 
 
 static int tfs_mkdir(const char *path, mode_t mode) {
+	printf("LOCKING MKDIR\n");
+	pthread_mutex_lock(&lock);
 	printf("-----------------------------\n");
 	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 	printf("entered tfs_mkdir\n");
@@ -879,6 +904,8 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 		int retval = get_node_by_path(dirname, 0, &parent_inode);
 		if (retval < 0) {
 			printf("dir not found\n");
+			printf("RELEASING LOCK IN MKDIR\n");
+			pthread_mutex_unlock(&lock);
 			return -ENOENT;
 		}
 	}
@@ -916,6 +943,8 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 
 	dir_add(new_inode, new_inode.ino, ".", 1);
 	dir_add(new_inode, parent_inode.ino, "..", 2);
+	printf("RELEASING LOCK IN MKDIR\n");
+	pthread_mutex_unlock(&lock);
 	return 0;
 }
 
@@ -926,6 +955,8 @@ static int tfs_releasedir(const char *path, struct fuse_file_info *fi) {
 }
 
 static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) {
+	printf("LOCKING TFS CREAT\n");
+	pthread_mutex_lock(&lock);
 	printf("-----------------------------\n");
 	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 	printf("entered tfs_create\n");
@@ -951,6 +982,8 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 		int retval = get_node_by_path(dirname, 0, &parent_inode);
 		if (retval < 0) {
 			printf("dir not found\n");
+			printf("RELEASING LOCK IN MKDIR\n");
+			pthread_mutex_unlock(&lock);
 			return -ENOENT;
 		}
 	}
@@ -999,28 +1032,40 @@ static int tfs_create(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	bio_write(1, inode_bitmap);
 	printf("tfs_create finished\n");
 	printf("---------------------------------------\n");
-
+	printf("RELEASING LOCK IN MKDIR\n");
+	pthread_mutex_unlock(&lock);
 	return 0;
 }
 
 static int tfs_open(const char *path, struct fuse_file_info *fi) {
+	printf("LOCKING OPEN\n");
+	pthread_mutex_lock(&lock);
 	printf("---------------------------------------\n");
 	printf("entered tfs_open\n");
 
 	// Step 1: Call get_node_by_path() to get inode from path
 	printf("getting node from path %s\n", path);
 	struct inode inode;
-	return get_node_by_path(path, 0, &inode);
+	int retval = get_node_by_path(path, 0, &inode);
+	printf("RELEASING LOCK IN OPEN\n");
+	pthread_mutex_unlock(&lock);
+	return retval;
 	// Step 2: If not find, return -1
 
 }
 
 static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi) {
-
+	printf("LOCKING TFS_READ\n");
+	pthread_mutex_lock(&lock);
 	// Step 1: You could call get_node_by_path() to get inode from path
 	struct inode target_file_inode;
-	get_node_by_path(path, 0, &target_file_inode);
-	
+	int rv = get_node_by_path(path, 0, &target_file_inode);
+	if (rv < 0) {
+		printf("dir not found\n");
+		printf("RELEASING LOCK IN read\n");
+		pthread_mutex_unlock(&lock);
+		return -ENOENT;
+	}
 	// Step 2: Based on size and offset, read its data blocks from disk
 	int start_block_index = offset / BLOCK_SIZE;
 	int end_block_index = (offset+size) / BLOCK_SIZE;
@@ -1072,10 +1117,14 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 	// Step 3: copy the correct amount of data from offset to buffer
 
 	// Note: this function should return the amount of bytes you copied to buffer
+	printf("RELEASING LOCK IN read\n");
+	pthread_mutex_unlock(&lock);
 	return bytes_written;
 }
 
 static int tfs_write(const char *path, const char *buffer, size_t size, off_t offset, struct fuse_file_info *fi) {
+	printf("LOCKING TFS_WRITE\n");
+	pthread_mutex_lock(&lock);
 	// Step 1: You could call get_node_by_path() to get inode from path
 	printf("-------------------------\n");
 	printf("entered tfs write\n");
@@ -1090,6 +1139,8 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	int ret_val = get_node_by_path(path, 0, &target_file_inode);
 	if(ret_val < 0){
 		printf("inode does not exist\n");
+		printf("RELEASING LOCK IN write\n");
+		pthread_mutex_unlock(&lock);
 		return -ENOENT;
 	}
 
@@ -1201,10 +1252,14 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	printf("updated size of file from vstat indisk : %d\n", target_file_inode.vstat.st_size);
 
 	// Note: this function should return the amount of bytes you write to disk
+	printf("RELEASING LOCK IN WRITE\n");
+	pthread_mutex_unlock(&lock);
 	return bytes_written;
 }
 
 static int tfs_rmdir(const char *path) {
+	printf("LOCKING RMDIR\n");
+	pthread_mutex_lock(&lock);
 	printf("-----------------------------\n");
 	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 	printf("entered tfs_rmdir\n");
@@ -1235,6 +1290,8 @@ static int tfs_rmdir(const char *path) {
 	int retval = get_node_by_path(path, 0, &target_directory_inode);
 	if(retval < 0){
 		printf("target directory not found \n");
+		printf("RELEASING LOCK IN RMDIR\n");
+		pthread_mutex_unlock(&lock);
 		return -ENOENT;
 	}
 
@@ -1264,6 +1321,8 @@ static int tfs_rmdir(const char *path) {
 	retval = get_node_by_path(dirname, 0, &parent_directory_inode);
 	if (retval < 0) {
 		printf("dir not found\n");
+		printf("RELEASING LOCK IN RMDIR\n");
+		pthread_mutex_unlock(&lock);
 		return -ENOENT;
 	}
 	dir_remove(parent_directory_inode, basename, strlen(basename));
@@ -1279,11 +1338,14 @@ static int tfs_rmdir(const char *path) {
 	// Step 5: Call get_node_by_path() to get inode of parent directory
 
 	// Step 6: Call dir_remove() to remove directory entry of target directory in its parent directory
-
+	printf("RELEASING LOCK IN RMDIR\n");
+	pthread_mutex_unlock(&lock);
 	return 0;
 }
 
 static int tfs_unlink(const char *path) {
+	printf("LOCKING UNLINK\n");
+	pthread_mutex_lock(&lock);
 	printf("-----------------------------\n");
 	// Step 1: Use dirname() and basename() to separate parent directory path and target directory name
 	printf("entered tfs_unlink\n");
@@ -1313,6 +1375,8 @@ static int tfs_unlink(const char *path) {
 	int retval = get_node_by_path(path, 0, &target_inode);
 	if (retval < 0) {
 		printf("target_file inode not found\n");
+		printf("RELEASING LOCK IN UNLINK\n");
+		pthread_mutex_unlock(&lock);
 		return -ENOENT;
 	}
 
@@ -1338,13 +1402,16 @@ static int tfs_unlink(const char *path) {
 	retval = get_node_by_path(dirname, 0, &parent_inode);
 	if (retval < 0) {
 		printf("parent inode not found\n");
+		printf("RELEASING LOCK IN UNLINK\n");
+		pthread_mutex_unlock(&lock);
 		return -ENOENT;
 	}
 	
 	
 	// Step 6: Call dir_remove() to remove directory entry of target file in its parent directory
 	dir_remove(parent_inode, basename, strlen(basename));
-
+	printf("RELEASING LOCK IN UNLINK\n");
+	pthread_mutex_unlock(&lock);
 	return 0;
 }
 
