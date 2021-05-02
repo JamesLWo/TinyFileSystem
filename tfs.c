@@ -830,7 +830,8 @@ static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, o
 			
 			//filler function here with name of dirent as the second arg
 			//filler(buffer, name_of_dirent, NULL, 0);
-			filler(buffer, current_entry.name, NULL ,offset);
+			if(current_entry.valid == 1)
+				filler(buffer, current_entry.name, NULL ,offset);
 
 			j = j + sizeof(struct dirent);
 			
