@@ -896,13 +896,12 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	printf("making new directory inode\n");
 	struct inode new_inode;
 	new_inode.ino = new_inode_number;
-	new_inode.link = 2;
 	new_inode.type = 0; //directory
 	new_inode.size = 0;
 	new_inode.vstat.st_size = 0;
 	new_inode.valid = 1;
 	memset(new_inode.direct_ptr, -1, sizeof(int)*16);
-
+	
 	// Step 5: Update inode for target directory
 	//printf("updating parent inode\n");
 	//parent_inode.link++;
@@ -913,6 +912,9 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	writei(new_inode.ino, &new_inode);	
 	printf("write success\n");
 	printf("-----------------------------\n");
+
+	dir_add(new_inode, new_inode.ino, ".", 1);
+	dir_add(new_inode, parent_inode.ino, "..", 2);
 	return 0;
 }
 
