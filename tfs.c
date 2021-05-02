@@ -122,13 +122,13 @@ int writei(uint16_t ino, struct inode *inode) {
 	void* buffer = malloc(BLOCK_SIZE);
 	bio_read(inode_block_index, buffer);
 
-	struct inode *before = buffer + (offset*sizeof(struct inode));
+	//struct inode *before = buffer + (offset*sizeof(struct inode));
 	//printf("block buffer before memcpy: %d\n", before->ino);
 
 	//update buffer at offset with our inode
 	memcpy(buffer + (offset*sizeof(struct inode)), inode, sizeof(struct inode));
 	
-	struct inode *after = buffer + (offset*sizeof(struct inode));
+	//struct inode *after = buffer + (offset*sizeof(struct inode));
 	//printf("block buffer after memcpy: %d\n", after->ino);
 
 	// Step 3: Write inode to disk 
@@ -856,11 +856,9 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	char* basename = strrchr(path, '/');
 	printf("basename before truncating: %s\n", basename);
 	struct inode parent_inode;
-	char* dirname;
 	
 	//case where path ends in root directory, i.e. path = /file
 	if(basename == path){
-		dirname = "/";
 		//get inode of parent directory which is root 
 		readi(0, &parent_inode);
 	}
