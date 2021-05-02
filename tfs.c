@@ -175,7 +175,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 			struct dirent current_entry;
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 
-			if(memcmp(fname, current_entry.name, name_len) == 0 && current_entry.valid == 1){
+			if(strcmp(fname, current_entry.name) == 0 && current_entry.valid == 1){
 				if(dirent != NULL){ //if we're calling dir_find for dir_remove/dir_add, don't copy anything
 					memcpy(dirent, address_of_dir_entry, sizeof(struct dirent));
 				}
@@ -401,7 +401,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 			struct dirent current_entry;
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 
-			if(memcmp(fname, current_entry.name, name_len) == 0){// found the dirent we want to remove
+			if(strcmp(fname, current_entry.name) == 0){// found the dirent we want to remove
 				current_entry.valid = 0;
 				//clear data blocks 
 				//update data bitmap
@@ -512,13 +512,13 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 			printf("inode type: %d\n", inode_of_current_entry->type);
 			printf("checking: %s == %s\n", directory_name, current_entry.name);
 			
-			printf("memory compare difference: %d\n", memcmp(directory_name, current_entry.name, index+1));
+			printf("string compare difference: %d\n", strcmp(directory_name, current_entry.name));
 			//checking if we found it and that we're done
 
 			//current directory entry has to be valid
 			if(current_entry.valid == 1){
 				//directory entry name has to match
-				if(memcmp(directory_name, current_entry.name, index+1) == 0 && strstr(truncatedPath, "/") == NULL){
+				if(strcmp(directory_name, current_entry.name) == 0 && strstr(truncatedPath, "/") == NULL){
 					//dirent is found, and we're at the end of filepath
 					memcpy(inode, inode_of_current_entry, sizeof(struct inode));
 					free(inode_of_current_entry);
@@ -526,7 +526,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 					return 0;
 				} 
 				//found it, have another directory to go into
-				else if(memcmp(directory_name, current_entry.name, index+1) == 0 && inode_of_current_entry->type < 1){
+				else if(strcmp(directory_name, current_entry.name) == 0 && inode_of_current_entry->type < 1){
 					printf("found dirent but need to recurse further\n");
 					//dirent is found
 					next_ino = current_entry.ino;
