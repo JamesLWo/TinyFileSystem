@@ -91,7 +91,7 @@ int readi(uint16_t ino, struct inode *inode) {
   int inodes_per_block = BLOCK_SIZE / sizeof(struct inode);
   //printf("number of inodes per block: %d\n", inodes_per_block);
   int inode_block_index = superblock->i_start_blk + ino / inodes_per_block;
-	//printf("block number: %d\n", inode_block_index);
+	printf("block number: %d\n", inode_block_index);
 
   
   // Step 2: Get offset of the inode in the inode on-disk block
