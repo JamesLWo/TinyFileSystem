@@ -708,6 +708,7 @@ static void *tfs_init(struct fuse_conn_info *conn) {
 
 		memcpy(superblock, block_buffer, sizeof(struct superblock));
 		printf("read contents into superblock from disk!\n");
+		printf("superblock d_start_blk: %d\n", superblock->d_start_blk);
 
 		bio_read(1, block_buffer);
 		memcpy(inode_bitmap, block_buffer, number_of_elements);
