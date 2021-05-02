@@ -775,12 +775,15 @@ static int tfs_getattr(const char *path, struct stat *stbuf) {
 
 	if (target_inode.type == 0){ //dir
 		stbuf->st_mode   = S_IFDIR | 0755;
-		stbuf->st_nlink  = 2;
+		stbuf->st_nlink  = target_inode.link;
 	}
 	else{ //file
 		stbuf->st_mode   = S_IFREG | 0644;
 		stbuf->st_nlink  = 1;
 	}
+	stbuf->st_uid = getuid();
+	stbuf->st_gid = getgid();
+	stbuf->st_ino = target_inode.ino;
 	
 	time(&stbuf->st_mtime);
 
