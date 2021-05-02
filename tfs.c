@@ -700,7 +700,7 @@ static void *tfs_init(struct fuse_conn_info *conn) {
 		printf("mallocing %d elements for data bitmap\n", number_of_elements);
 		data_region_bitmap = malloc(number_of_elements);
 		printf("mallocing superblock\n");
-		struct superblock* superblock = malloc(sizeof(*superblock));
+		superblock = malloc(sizeof(*superblock));
 		//bioread for the bitmaps
 		printf("Reading superblock from disk...\n");
 		void* block_buffer = malloc(BLOCK_SIZE);
