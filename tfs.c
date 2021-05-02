@@ -161,7 +161,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 	for(i = 0; i < 16; i++){
 		int current_data_block_index = superblock->d_start_blk + dir_inode.direct_ptr[i];
 		printf("current datablock index at dir_inode.direct_ptr[%d]: %d\n", i, current_data_block_index);
-		if(current_data_block_index == -1){
+		if(dir_inode.direct_ptr[i]== -1){
 			printf("reached end of valid data blocks\n");
 			break;
 		}
@@ -388,7 +388,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 	int i;
 	for(i = 0; i < 16; i++){
 		int current_data_block_index = superblock->d_start_blk + dir_inode.direct_ptr[i];
-		if(current_data_block_index == -1){
+		if(dir_inode.direct_ptr[i] == -1){
 			break;
 		}
 		
