@@ -194,6 +194,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 		}
 	}
 	free(current_data_block);
+	printf("----------------------\n");
 	if(foundDir == 0){
 		//we found the dirent
 		return 0;
@@ -216,6 +217,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	
 	if (dir_find(dir_inode.ino, fname, strlen(fname), NULL) == 0){ 
 		printf("Cannot dir_add, duplicate detected\n");
+		printf("-------------------\n");
 		return -EEXIST;
 	}
 	printf("dirent does not exist, okay to add\n");
@@ -369,13 +371,15 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	free(current_data_block);
 	free(new_data_block);
 
-
+	printf("-------------------\n");
 	return 0;
 }
 
 
 
 int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
+	printf("-------------------\n");
+	printf("entered dir_remove\n");
 
 	// Step 1: Read dir_inode's data block and checks each directory entry of dir_inode
 
@@ -422,7 +426,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 				memcpy(current_data_block + j, &current_entry, sizeof(struct dirent));
 				//write cleared datablock to disk
 				bio_write(current_data_block_index, current_data_block);
-				
+				printf("-------------------\n");
 				return 0; 
 			}
 
@@ -433,6 +437,9 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 		
 	}
 	//we cannot find the dirent
+	printf("cannot find dirent to remove\n");
+	printf("-------------------\n");
+
 	return -1;
 	// Step 2: Check if fname exist
 
@@ -539,6 +546,8 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 	
 	free(current_data_block);
 	if (next_ino == -1){
+		printf("not found\n");
+		printf("---------------------------------------\n");
 		return -ENOENT; //not found
 	}
 	//at this point, current_ino is set to be the inode number of foo
@@ -556,6 +565,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 		return -ENOENT; //file or dir not found
 	}
 	printf("Successfully found\n");
+	printf("---------------------------------------\n");
 	return 0; //found the elusive inode, stored inside *inode
 }
 
@@ -693,10 +703,19 @@ static void *tfs_init(struct fuse_conn_info *conn) {
 		struct superblock* superblock = malloc(sizeof(*superblock));
 		//bioread for the bitmaps
 		printf("Reading superblock from disk...\n");
-		bio_read(0, superblock);
-		printf("Successfully read contents into superblock from disk!\n");
-		
-		
+		void* block_buffer = malloc(BLOCK_SIZE);
+		bio_read(0, block_buffer);
+
+		memcpy(superblock, block_buffer, sizeof(struct superblock));
+		printf("read contents into superblock from disk!\n");
+
+		bio_read(1, block_buffer);
+		memcpy(inode_bitmap, block_buffer, number_of_elements);
+		printf("read contents into inode bitmap from disk!\n");
+
+		bio_read(2, block_buffer);
+		memcpy(data_region_bitmap, block_buffer, number_of_elements);
+		printf("read contents into data region bitmap from disk!\n");
 	}
 
 	printf("TFS INIT COMPLETED\n");
@@ -763,6 +782,9 @@ static int tfs_opendir(const char *path, struct fuse_file_info *fi) {
 	printf("entered tfs_opendir\n");
 	struct inode* inode = malloc(sizeof(*inode));
 	printf("getting node at path %s\n", path);
+
+
+	printf("---------------------------------------\n");
 	return get_node_by_path(path, 0, inode);
 
 	// Step 1: Call get_node_by_path() to get inode from path
@@ -811,6 +833,7 @@ static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, o
 
 		}
 	}
+	printf("---------------------------------------\n");
 
 	// Step 2: Read directory entries from its data blocks, and copy them to filler
 	//rn, inode directptrs have all dirents
@@ -835,7 +858,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	struct inode parent_inode;
 	char* dirname;
 	
-	//case where path starts from root dir, i.e. path = /file
+	//case where path ends in root directory, i.e. path = /file
 	if(basename == path){
 		dirname = "/";
 		//get inode of parent directory which is root 
@@ -844,7 +867,6 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	//file is not directly under root
 	else {
 		int length_of_parent_directory_name = basename - path;
-		
 		char* dirname = malloc(length_of_parent_directory_name + 1);
 		memcpy(dirname, path, length_of_parent_directory_name);
 		dirname[length_of_parent_directory_name+1] = '\0';
@@ -888,7 +910,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	printf("writing inode...\n");
 	writei(new_inode.ino, &new_inode);	
 	printf("write success\n");
-	printf("-------------------------\n");
+	printf("-----------------------------\n");
 	return 0;
 }
 
