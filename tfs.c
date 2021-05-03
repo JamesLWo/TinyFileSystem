@@ -384,11 +384,12 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 	printf("entered dir_remove\n");
 
 	// Step 1: Read dir_inode's data block and checks each directory entry of dir_inode
-
+	int found_dirent_to_remove = 0;
 	//allocate space for current data block being read
 	void* current_data_block = malloc(BLOCK_SIZE);
 	int i;
 	for(i = 0; i < 16; i++){
+		int data_block_empty = 1;
 		int current_data_block_index = superblock->d_start_blk + dir_inode.direct_ptr[i];
 		if(dir_inode.direct_ptr[i] == -1){
 			break;
@@ -402,8 +403,8 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 			void* address_of_dir_entry = current_data_block + j;
 			struct dirent current_entry;
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
-
 			if(strcmp(fname, current_entry.name) == 0){// found the dirent we want to remove
+				found_dirent_to_remove = 1;
 				current_entry.valid = 0;
 				//clear data blocks 
 				//update data bitmap
@@ -428,15 +429,27 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 				memcpy(current_data_block + j, &current_entry, sizeof(struct dirent));
 				//write cleared datablock to disk
 				bio_write(current_data_block_index, current_data_block);
-				printf("-------------------\n");
-				return 0; 
+				 
+			}
+			else if(current_entry.valid == 1){
+				data_block_empty = 0;
 			}
 
 			j = j + sizeof(struct dirent);
 			
 
 		}
+		if(data_block_empty == 1){
+			//entire data block is empty, we don't need it anymore
+			printf("unsetting this bit: %d\n", get_bitmap(data_region_bitmap, dir_inode.direct_ptr[i]));
+
+			unset_bitmap(data_region_bitmap, dir_inode.direct_ptr[i]);
+		}
 		
+	}
+	if(found_dirent_to_remove == 1){
+		printf("-------------------\n");
+		return 0;
 	}
 	//we cannot find the dirent
 	printf("cannot find dirent to remove\n");
