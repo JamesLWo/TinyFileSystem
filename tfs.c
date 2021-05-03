@@ -1200,8 +1200,9 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		//if block already exists 
 		else{
 			printf("block exists with num %d, reading from block\n", block_number);
-			bio_read(block_number, current_block);
+			
 		}
+		bio_read(block_number, current_block);
 
 		if(size <= remaining_block_room){
 			printf("remaining size fits into block\n");
@@ -1237,8 +1238,10 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		else{
 			printf("block already exists\n");
 			printf("reading block %d\n", block_number);
-			bio_read(block_number, current_block);
+			
 		}
+
+		bio_read(block_number, current_block);
 
 
 		if(remaining_bytes <= BLOCK_SIZE){
@@ -1276,7 +1279,6 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 
 	// Note: this function should return the amount of bytes you write to disk
 	printf("RELEASING LOCK IN WRITE\n");
-	printf("printing all block numbers: %d\n");
 	
 	pthread_mutex_unlock(&lock);
 	return bytes_written;
