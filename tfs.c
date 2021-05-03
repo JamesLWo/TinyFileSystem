@@ -1357,6 +1357,7 @@ static int tfs_rmdir(const char *path) {
 		}
 		printf("unsetting this bit: %d for inode %d at block %d\n", get_bitmap(data_region_bitmap, data_block_to_clear), target_directory_inode.ino, target_directory_inode.direct_ptr[i]);
 		unset_bitmap(data_region_bitmap, data_block_to_clear);
+		target_directory_inode[i] = -1;
 	}
 	bio_write(2, data_region_bitmap);
 
@@ -1443,6 +1444,7 @@ static int tfs_unlink(const char *path) {
 		}
 		printf("unsetting this bit: %d for inode %d at block %d\n", get_bitmap(data_region_bitmap, current_data_block_number), target_inode.ino, target_inode.direct_ptr[i]);
 		unset_bitmap(data_region_bitmap, current_data_block_number);
+		target_inode.direct_ptr[i] = -1;
 	}
 	bio_write(2, data_region_bitmap);
 
