@@ -1078,10 +1078,13 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 	// Step 2: Based on size and offset, read its data blocks from disk
 	int start_block_index = offset / BLOCK_SIZE;
 	int end_block_index = (offset+size) / BLOCK_SIZE;
+
+	
 	if((offset+size) % BLOCK_SIZE != 0){
 		end_block_index++;
 	}
-
+	printf("start block: %d\n", start_block_index);
+	printf("end block index: %d\n", end_block_index);
 	int bytes_written = 0;
 
 	int beginning = start_block_index;
@@ -1110,9 +1113,11 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 	int i;
 	for(i = beginning; i < end_block_index; i++){
 		int remaining_bytes = size - bytes_written;
+		printf("remaining bytes: %d\n", remaining_bytes);
 		bio_read(target_file_inode.direct_ptr[i]+superblock->d_start_blk, current_block);
 
 		if(remaining_bytes <= BLOCK_SIZE){
+			printf("bytes can fit in current block: copying at offset of %d\n", bytes_written);
 			memcpy(buffer+bytes_written, current_block, remaining_bytes);
 			bytes_written += remaining_bytes;
 		}
@@ -1128,6 +1133,7 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 	// Note: this function should return the amount of bytes you copied to buffer
 	printf("RELEASING LOCK IN read\n");
 	pthread_mutex_unlock(&lock);
+	printf("total bytes written: %d\n", bytes_written);
 	return bytes_written;
 }
 
