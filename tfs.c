@@ -251,11 +251,11 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			
 			void* address_of_dir_entry = current_data_block + j;
-			printf("current address of dir entry: %p\n", address_of_dir_entry);
+			//printf("current address of dir entry: %p\n", address_of_dir_entry);
 			//struct dirent current_entry;
 			struct dirent *current_entry = (struct dirent*) address_of_dir_entry;
 			//memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
-			printf("copied dirent into current_entry\n");
+			//printf("copied dirent into current_entry\n");
 
 			if(current_entry->valid == 0){
 				printf("found an invalid dirent\n");
@@ -294,18 +294,18 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		printf("did not find available data block for new directory entry\n");
 		//new data block created
 		int j = 0;
-		printf("getting available block num...\n");
+		printf("getting available block num for new directory entry %s...\n", fname);
 		new_data_block_number = get_avail_blkno();
 		printf("new block number: %d\n", new_data_block_number);
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
-			printf("populating block with a dirent...\n");
+			//printf("populating block with a dirent...\n");
 			//fill new data block with invalid dirents 
 			struct dirent new_dirent = {0, 0, "", 0};
 			//new_dirent->valid = -1;
 			//new_dirent->ino = -1;
 			//new_dirent->name[0] = '\0';
 			//new_dirent->len = 0;
-			printf("new_dirent valid = %d\nnew_dirent ino=%d\nnew_dirent name=%s\nnew_dirent len=%d\n", new_dirent.valid, new_dirent.ino, new_dirent.name, new_dirent.len);
+			//printf("new_dirent valid = %d\nnew_dirent ino=%d\nnew_dirent name=%s\nnew_dirent len=%d\n", new_dirent.valid, new_dirent.ino, new_dirent.name, new_dirent.len);
 			memcpy(new_data_block + j, &new_dirent, sizeof(struct dirent));
 			
 
@@ -331,9 +331,9 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		int a;
 		for(a = 0; a < 16; a++){
 			if(dir_inode.direct_ptr[a] == -1){
-				printf("adding new block number %d to direct_ptr index %d\n", new_data_block_number, a);
+				//printf("adding new block number %d to direct_ptr index %d\n", new_data_block_number, a);
 				dir_inode.direct_ptr[a] = new_data_block_number;
-				printf("dir_inode.direct_ptr[%d] = %d\n", a, dir_inode.direct_ptr[a]);
+				//printf("dir_inode.direct_ptr[%d] = %d\n", a, dir_inode.direct_ptr[a]);
 				break;
 			}
 		}
