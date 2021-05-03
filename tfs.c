@@ -294,7 +294,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		printf("did not find available data block for new directory entry\n");
 		//new data block created
 		int j = 0;
-		printf("getting available block num for new directory entry %s...\n", fname);
+		printf("GETTING AVAILABLE BLOCK NUM FOR NEW DIRECTORY ENTRY '%s'...\n", fname);
 		new_data_block_number = get_avail_blkno();
 		printf("new block number: %d\n", new_data_block_number);
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
