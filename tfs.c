@@ -163,8 +163,8 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 		int current_data_block_index = superblock->d_start_blk + dir_inode.direct_ptr[i];
 		printf("current datablock index at dir_inode.direct_ptr[%d]: %d\n", i, current_data_block_index);
 		if(dir_inode.direct_ptr[i]== -1){
-			printf("reached end of valid data blocks\n");
-			break;
+			printf("found invalid data block...ignore\n");
+			continue;
 		}
 		
 		bio_read(current_data_block_index, current_data_block);
@@ -242,8 +242,8 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 
 		//as soon as we see a -1, we know that we've already considered all available data blocks
 		if(dir_inode.direct_ptr[z] == -1){
-			printf("no blocks available\n");
-			break;
+			printf("found invalid datablock...ignore and continue trying to find a valid one\n");
+			continue;
 		}
 		bio_read(dir_inode.direct_ptr[z] + superblock->d_start_blk, current_data_block);
 		int j = 0;
@@ -392,7 +392,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 		int data_block_empty = 1;
 		int current_data_block_index = superblock->d_start_blk + dir_inode.direct_ptr[i];
 		if(dir_inode.direct_ptr[i] == -1){
-			break;
+			continue;
 		}
 		
 		bio_read(current_data_block_index, current_data_block);
@@ -444,6 +444,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 			printf("unsetting this bit: %d\n", get_bitmap(data_region_bitmap, dir_inode.direct_ptr[i]));
 
 			unset_bitmap(data_region_bitmap, dir_inode.direct_ptr[i]);
+			dir_inode.direct_ptr[i] = -1;
 		}
 		
 	}
@@ -509,7 +510,7 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 		int current_data_block_index = superblock->d_start_blk + current_inode.direct_ptr[i];
 		printf("looking at data block %d...\n", current_data_block_index);
 		if(current_inode.direct_ptr[i] == -1){
-			break;
+			continue;
 		}
 		
 		bio_read(current_data_block_index, current_data_block);
@@ -865,7 +866,7 @@ static int tfs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, o
 	for(i = 0; i < 16; i++){
 		int current_data_block_index = inode->direct_ptr[i] + superblock->d_start_blk;
 		if(inode->direct_ptr[i] == -1){
-			break;
+			continue;
 		}
 		bio_read(current_data_block_index, current_data_block);
 
@@ -1351,7 +1352,7 @@ static int tfs_rmdir(const char *path) {
 	for(i = 0; i < 16; i++){
 		int data_block_to_clear = target_directory_inode.direct_ptr[i];
 		if(data_block_to_clear == -1){
-			break;
+			continue;
 		}
 		printf("unsetting this bit: %d\n", get_bitmap(data_region_bitmap, data_block_to_clear));
 		unset_bitmap(data_region_bitmap, data_block_to_clear);
@@ -1437,7 +1438,7 @@ static int tfs_unlink(const char *path) {
 	for(i = 0; i < 16; i++){
 		int current_data_block_number = target_inode.direct_ptr[i];
 		if(current_data_block_number == -1){
-			break;
+			continue;
 		}
 		printf("unsetting this bit: %d\n", get_bitmap(data_region_bitmap, current_data_block_number));
 		unset_bitmap(data_region_bitmap, current_data_block_number);
