@@ -725,6 +725,15 @@ static void *tfs_init(struct fuse_conn_info *conn) {
 		bio_read(2, block_buffer);
 		memcpy(data_region_bitmap, block_buffer, number_of_elements);
 		printf("read contents into data region bitmap from disk!\n");
+
+		int i;
+		int counter = 0;
+		for(i = 0; i < sizeof(*data_region_bitmap); i++){
+			if(data_region_bitmap[i] == 1){
+				counter++;
+			}
+		}
+		printf("Number of data blocks used in data region: %d\n", counter);
 	}
 	
 
@@ -1499,14 +1508,7 @@ int main(int argc, char *argv[]) {
 
 	fuse_stat = fuse_main(argc, argv, &tfs_ope, NULL);
 
-	int i;
-	int counter = 0;
-	for(i = 0; i < sizeof(*data_region_bitmap); i++){
-		if(data_region_bitmap[i] == 1){
-			counter++;
-		}
-	}
-	printf("Number of data blocks used in data region: %d\n", counter);
+	
 
 	return fuse_stat;
 }
