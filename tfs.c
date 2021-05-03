@@ -511,8 +511,8 @@ int get_node_by_path(const char *path, uint16_t ino, struct inode *inode) {
 
 			
 			readi(current_entry.ino, inode_of_current_entry);
-			printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n", current_entry.ino, current_entry.valid, current_entry.name);
-			printf("inode type: %d\n", inode_of_current_entry->type);
+			//printf("current dirent ino: %d\ncurrent dirent validity: %d\ncurrent dirent name: %s\n", current_entry.ino, current_entry.valid, current_entry.name);
+			//printf("inode type: %d\n", inode_of_current_entry->type);
 			printf("checking: %s == %s\n", directory_name, current_entry.name);
 			
 			printf("string compare difference: %d\n", strcmp(directory_name, current_entry.name));
@@ -1115,7 +1115,7 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 		int remaining_bytes = size - bytes_written;
 		printf("remaining bytes: %d\n", remaining_bytes);
 		bio_read(target_file_inode.direct_ptr[i]+superblock->d_start_blk, current_block);
-
+		printf("read block %d in current block\n", target_file_inode.direct_ptr[i]+superblock->d_start_blk);
 		if(remaining_bytes <= BLOCK_SIZE){
 			printf("bytes can fit in current block: copying at offset of %d\n", bytes_written);
 			memcpy(buffer+bytes_written, current_block, remaining_bytes);
@@ -1133,7 +1133,7 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 	// Note: this function should return the amount of bytes you copied to buffer
 	printf("RELEASING LOCK IN read\n");
 	pthread_mutex_unlock(&lock);
-	printf("total bytes written: %d\n", bytes_written);
+	printf("total bytes read: %d\n", bytes_written);
 	return bytes_written;
 }
 
@@ -1228,6 +1228,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		}
 		//if block already exists 
 		else{
+			printf("block already exists\n");
 			printf("reading block %d\n", block_number);
 			bio_read(block_number, current_block);
 		}
