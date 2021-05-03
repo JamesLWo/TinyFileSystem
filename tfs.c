@@ -1075,6 +1075,8 @@ static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, s
 		pthread_mutex_unlock(&lock);
 		return -ENOENT;
 	}
+
+	printf("target file inode number is: %d\n", target_file_inode.ino);
 	// Step 2: Based on size and offset, read its data blocks from disk
 	int start_block_index = offset / BLOCK_SIZE;
 	int end_block_index = (offset+size) / BLOCK_SIZE;
@@ -1160,6 +1162,9 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	}
 
 	printf("file found!\n");
+
+
+	printf("target file inode number is: %d\n", target_file_inode.ino);
 
 	int start_block_index = offset / BLOCK_SIZE;
 	int end_block_index = (offset+size) / BLOCK_SIZE;
