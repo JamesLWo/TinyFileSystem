@@ -327,6 +327,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			i++;
 		}
 		first_dirent->name[i] = '\0';
+		memcpy(new_data_block, &first_dirent, sizeof(struct dirent));
 		//add the new block index to the directptr array
 		int a;
 		for(a = 0; a < 16; a++){
