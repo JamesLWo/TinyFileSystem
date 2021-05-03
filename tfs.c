@@ -327,12 +327,12 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			i++;
 		}
 		first_dirent->name[i] = '\0';
-		memcpy(new_data_block, &first_dirent, sizeof(struct dirent));
+		//memcpy(new_data_block, &first_dirent, sizeof(struct dirent));
 		//add the new block index to the directptr array
 		int a;
 		for(a = 0; a < 16; a++){
 			if(dir_inode.direct_ptr[a] == -1){
-				//printf("adding new block number %d to direct_ptr index %d\n", new_data_block_number, a);
+				printf("adding new block number %d to direct_ptr index %d\n", new_data_block_number, a);
 				dir_inode.direct_ptr[a] = new_data_block_number;
 				//printf("dir_inode.direct_ptr[%d] = %d\n", a, dir_inode.direct_ptr[a]);
 				break;
