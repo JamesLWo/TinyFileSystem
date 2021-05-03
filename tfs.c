@@ -1059,6 +1059,12 @@ static int tfs_open(const char *path, struct fuse_file_info *fi) {
 
 static int tfs_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi) {
 	printf("LOCKING TFS_READ\n");
+	printf("path: %s\n", path);
+	printf("buffer: %s\n", buffer);
+	printf("size: %d\n", size);
+	printf("offset: %d\n", offset);
+
+
 	pthread_mutex_lock(&lock);
 	// Step 1: You could call get_node_by_path() to get inode from path
 	struct inode target_file_inode;
