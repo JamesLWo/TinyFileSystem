@@ -728,8 +728,8 @@ static void *tfs_init(struct fuse_conn_info *conn) {
 
 		int i;
 		int counter = 0;
-		for(i = 0; i < sizeof(*data_region_bitmap); i++){
-			if(data_region_bitmap[i] == 1){
+		for(i = 0; i < MAX_DNUM; i++){
+			if(get_bitmap(data_region_bitmap, i) == 1){
 				counter++;
 			}
 		}
