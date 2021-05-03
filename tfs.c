@@ -1277,12 +1277,7 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 	// Note: this function should return the amount of bytes you write to disk
 	printf("RELEASING LOCK IN WRITE\n");
 	printf("printing all block numbers: %d\n");
-	int n = 0;
-	while(true){
-		if(target_file_inode.direct_ptr[n] != -1){
-			printf("")
-		}
-	}
+	
 	pthread_mutex_unlock(&lock);
 	return bytes_written;
 }
