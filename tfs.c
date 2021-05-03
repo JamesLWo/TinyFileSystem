@@ -1499,6 +1499,15 @@ int main(int argc, char *argv[]) {
 
 	fuse_stat = fuse_main(argc, argv, &tfs_ope, NULL);
 
+	int i;
+	int counter = 0;
+	for(i = 0; i < sizeof(*data_region_bitmap); i++){
+		if(data_region_bitmap[i] == 1){
+			counter++;
+		}
+	}
+	printf("Number of data blocks used in data region: %d\n", counter);
+
 	return fuse_stat;
 }
 
