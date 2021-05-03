@@ -441,7 +441,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 		}
 		if(data_block_empty == 1){
 			//entire data block is empty, we don't need it anymore
-			printf("unsetting this bit: %d\n", get_bitmap(data_region_bitmap, dir_inode.direct_ptr[i]));
+			printf("unsetting this bit: %d at inode %d at block %d\n", get_bitmap(data_region_bitmap, dir_inode.direct_ptr[i]), dir_inode.ino, dir_inode.direct_ptr[i]);
 
 			unset_bitmap(data_region_bitmap, dir_inode.direct_ptr[i]);
 			dir_inode.direct_ptr[i] = -1;
@@ -1354,7 +1354,7 @@ static int tfs_rmdir(const char *path) {
 		if(data_block_to_clear == -1){
 			continue;
 		}
-		printf("unsetting this bit: %d\n", get_bitmap(data_region_bitmap, data_block_to_clear));
+		printf("unsetting this bit: %d for inode %d at block %d\n", get_bitmap(data_region_bitmap, data_block_to_clear), target_directory_inode.ino, target_directory_inode.direct_ptr[i]);
 		unset_bitmap(data_region_bitmap, data_block_to_clear);
 	}
 	bio_write(2, data_region_bitmap);
@@ -1440,7 +1440,7 @@ static int tfs_unlink(const char *path) {
 		if(current_data_block_number == -1){
 			continue;
 		}
-		printf("unsetting this bit: %d\n", get_bitmap(data_region_bitmap, current_data_block_number));
+		printf("unsetting this bit: %d for inode %d at block %d\n", get_bitmap(data_region_bitmap, current_data_block_number), target_inode.ino, target_inode.direct_ptr[i]);
 		unset_bitmap(data_region_bitmap, current_data_block_number);
 	}
 	bio_write(2, data_region_bitmap);
