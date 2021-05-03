@@ -1188,9 +1188,10 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		//if this block has not been made yet, allocate a new block
 		if(target_file_inode.direct_ptr[beginning] == -1){
 			printf("need to allocate new block\n");
-			int new_block_number = get_avail_blkno() + superblock->d_start_blk;
+			int data_region_block_number = get_avail_blkno();
+			int new_block_number =data_region_block_number + superblock->d_start_blk;
 			printf("generated block num: %d\n", new_block_number);
-			target_file_inode.direct_ptr[beginning] = new_block_number;
+			target_file_inode.direct_ptr[beginning] = data_region_block_number;
 			//set_bitmap(data_region_bitmap, get_avail_blkno);
 			block_number = new_block_number;
 
@@ -1223,9 +1224,10 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 		int block_number = target_file_inode.direct_ptr[i]+superblock->d_start_blk;
 		if(target_file_inode.direct_ptr[i] == -1){
 			printf("need to allocate new block\n");
-			int new_block_number = get_avail_blkno() + superblock->d_start_blk;
+			int data_region_block_number = get_avail_blkno();
+			int new_block_number = data_region_block_number + superblock->d_start_blk;
 			printf("generated block num: %d\n", new_block_number);
-			target_file_inode.direct_ptr[i] = new_block_number;
+			target_file_inode.direct_ptr[i] = data_region_block_number;
 			//set_bitmap(data_region_bitmap, new_block_number);
 			block_number = new_block_number;
 
@@ -1274,6 +1276,13 @@ static int tfs_write(const char *path, const char *buffer, size_t size, off_t of
 
 	// Note: this function should return the amount of bytes you write to disk
 	printf("RELEASING LOCK IN WRITE\n");
+	printf("printing all block numbers: %d\n");
+	int n = 0;
+	while(true){
+		if(target_file_inode.direct_ptr[n] != -1){
+			printf("")
+		}
+	}
 	pthread_mutex_unlock(&lock);
 	return bytes_written;
 }
