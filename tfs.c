@@ -332,7 +332,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		int a;
 		for(a = 0; a < 16; a++){
 			if(dir_inode.direct_ptr[a] == -1){
-				printf("adding new block number %d to direct_ptr index %d\n", new_data_block_number, a);
+				printf("adding new block number %d to direct_ptr index %d\n for inode %d\n", new_data_block_number, a, dir_inode.ino);
 				dir_inode.direct_ptr[a] = new_data_block_number;
 				//printf("dir_inode.direct_ptr[%d] = %d\n", a, dir_inode.direct_ptr[a]);
 				break;
