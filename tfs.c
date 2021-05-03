@@ -955,6 +955,7 @@ static int tfs_mkdir(const char *path, mode_t mode) {
 	printf("-----------------------------\n");
 
 	dir_add(new_inode, new_inode.ino, ".", 1);
+	readi(new_inode.ino, &new_inode);
 	dir_add(new_inode, parent_inode.ino, "..", 2);
 	printf("RELEASING LOCK IN MKDIR\n");
 	pthread_mutex_unlock(&lock);
