@@ -445,6 +445,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 
 			unset_bitmap(data_region_bitmap, dir_inode.direct_ptr[i]);
 			dir_inode.direct_ptr[i] = -1;
+			bio_write(2, data_region_bitmap);
 		}
 		
 	}
