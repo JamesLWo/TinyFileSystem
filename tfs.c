@@ -144,15 +144,15 @@ int writei(uint16_t ino, struct inode *inode) {
  * directory operations
  */
 int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *dirent) {
-	printf("----------------------\n");
-	printf("entered dir_find\n");
-	printf("ino: %d\n fname: %s\n name_len: %d\n", ino, fname, name_len);
+	//printf("----------------------\n");
+	//printf("entered dir_find\n");
+	//printf("ino: %d\n fname: %s\n name_len: %d\n", ino, fname, name_len);
     // Step 1: Call readi() to get the inode using ino (inode number of current directory)
 
-	printf("reading directory inode...\n");
+	//printf("reading directory inode...\n");
 	struct inode dir_inode;
 	readi(ino, &dir_inode);
-	printf("read directory inode: %d\n", dir_inode.ino);
+	//printf("read directory inode: %d\n", dir_inode.ino);
 	//Step 2: iterate over every dirent and find if matches
 	int i;
 	int foundDir = -1;
@@ -161,9 +161,9 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 	void* current_data_block = malloc(BLOCK_SIZE);
 	for(i = 0; i < 16; i++){
 		int current_data_block_index = superblock->d_start_blk + dir_inode.direct_ptr[i];
-		printf("current datablock index at dir_inode.direct_ptr[%d]: %d\n", i, current_data_block_index);
+		//printf("current datablock index at dir_inode.direct_ptr[%d]: %d\n", i, current_data_block_index);
 		if(dir_inode.direct_ptr[i]== -1){
-			printf("found invalid data block...ignore\n");
+			//printf("found invalid data block...ignore\n");
 			continue;
 		}
 		
@@ -195,7 +195,7 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 		}
 	}
 	free(current_data_block);
-	printf("----------------------\n");
+	//printf("----------------------\n");
 	if(foundDir == 0){
 		//we found the dirent
 		return 0;
@@ -212,16 +212,16 @@ int dir_find(uint16_t ino, const char *fname, size_t name_len, struct dirent *di
 }
 
 int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t name_len) {
-	printf("-------------------\n");
-	printf("entered dir_add\n");
+	//printf("-------------------\n");
+	//printf("entered dir_add\n");
 	//if the dirent already exists, return -1
 	
 	if (dir_find(dir_inode.ino, fname, strlen(fname), NULL) == 0){ 
-		printf("Cannot dir_add, duplicate detected\n");
-		printf("-------------------\n");
+		//printf("Cannot dir_add, duplicate detected\n");
+		//printf("-------------------\n");
 		return -EEXIST;
 	}
-	printf("dirent does not exist, okay to add\n");
+	//printf("dirent does not exist, okay to add\n");
 	
 	// Step 1: Read dir_inode's data block and check each directory entry of dir_inode
 	
@@ -236,13 +236,13 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	void* current_data_block = malloc(BLOCK_SIZE);
 	int z = 0;
 	for (z = 0; z < 16; z++){
-		printf("checking directptr[%d]]\n", z);
+		//printf("checking directptr[%d]]\n", z);
 		//check if directptr[j] has enough space for our directory. if so, add using offset
 		//we also know directptr[j] refers to a data block that only has dirents, we just want a dirent that has valid = 0
 
 		//as soon as we see a -1, we know that we've already considered all available data blocks
 		if(dir_inode.direct_ptr[z] == -1){
-			printf("found invalid datablock...ignore and continue trying to find a valid one\n");
+			//printf("found invalid datablock...ignore and continue trying to find a valid one\n");
 			continue;
 		}
 		bio_read(dir_inode.direct_ptr[z] + superblock->d_start_blk, current_data_block);
@@ -258,7 +258,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 			//printf("copied dirent into current_entry\n");
 
 			if(current_entry->valid == 0){
-				printf("found an invalid dirent\n");
+				//printf("found an invalid dirent\n");
 				//not valid, we found an unoccupied one
 				current_entry->valid = 1;
 				current_entry->ino = f_ino;
@@ -291,12 +291,12 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	//if we ended up not finding a invalid dirent in the available data blocks, find a new data block
 
 	if (found_data_block_number == -1){ 
-		printf("did not find available data block for new directory entry\n");
+		//printf("did not find available data block for new directory entry\n");
 		//new data block created
 		int j = 0;
-		printf("GETTING AVAILABLE BLOCK NUM FOR NEW DIRECTORY ENTRY '%s'...\n", fname);
+		//printf("GETTING AVAILABLE BLOCK NUM FOR NEW DIRECTORY ENTRY '%s'...\n", fname);
 		new_data_block_number = get_avail_blkno();
-		printf("new block number: %d\n", new_data_block_number);
+		//printf("new block number: %d\n", new_data_block_number);
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			//printf("populating block with a dirent...\n");
 			//fill new data block with invalid dirents 
@@ -332,7 +332,7 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		int a;
 		for(a = 0; a < 16; a++){
 			if(dir_inode.direct_ptr[a] == -1){
-				printf("adding new block number %d to direct_ptr index %d\n for inode %d\n", new_data_block_number, a, dir_inode.ino);
+				//printf("adding new block number %d to direct_ptr index %d\n for inode %d\n", new_data_block_number, a, dir_inode.ino);
 				dir_inode.direct_ptr[a] = new_data_block_number;
 				//printf("dir_inode.direct_ptr[%d] = %d\n", a, dir_inode.direct_ptr[a]);
 				break;
@@ -347,12 +347,12 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	dir_inode.link += 1;
 	//update stat here
 	
-	printf("writing changes for directory inode to disk\n");
+	//printf("writing changes for directory inode to disk\n");
 	writei(dir_inode.ino, &dir_inode);
 
 	// Write directory entry
 	if(found_data_block_number > 0){
-		printf("writing to existing data block %d...\n", found_data_block_number);
+		//printf("writing to existing data block %d...\n", found_data_block_number);
 		bio_write(found_data_block_number, found_block);
 	}
 	else{
@@ -360,10 +360,10 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 		int j = 0;
 		while(j + sizeof(struct dirent) < BLOCK_SIZE){
 			struct dirent* copied_dirent = (struct dirent *)(new_data_block + j);
-			printf("copied dirent's validity: %d\n", copied_dirent->valid);
+			//printf("copied dirent's validity: %d\n", copied_dirent->valid);
 			j = j + sizeof(struct dirent);
 		}
-		printf("writing to a new data block %d...\n", new_data_block_number);
+		//printf("writing to a new data block %d...\n", new_data_block_number);
 		bio_write(new_data_block_number + superblock->d_start_blk, new_data_block);
 		
 	}
@@ -373,15 +373,15 @@ int dir_add(struct inode dir_inode, uint16_t f_ino, const char *fname, size_t na
 	free(current_data_block);
 	free(new_data_block);
 
-	printf("-------------------\n");
+	//printf("-------------------\n");
 	return 0;
 }
 
 
 
 int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
-	printf("-------------------\n");
-	printf("entered dir_remove\n");
+	//printf("-------------------\n");
+	//printf("entered dir_remove\n");
 	
 
 	// Step 1: Read dir_inode's data block and checks each directory entry of dir_inode
@@ -396,7 +396,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 		if(dir_inode.direct_ptr[i] == -1){
 			continue;
 		}
-		printf("current_data_block_index = %d\n", current_data_block);
+		//printf("current_data_block_index = %d\n", current_data_block);
 		bio_read(current_data_block_index, current_data_block);
 
 		int j = 0;
@@ -406,7 +406,7 @@ int dir_remove(struct inode dir_inode, const char *fname, size_t name_len) {
 			struct dirent current_entry;
 			memcpy(&current_entry, address_of_dir_entry, sizeof(struct dirent));
 			if(strcmp(fname, current_entry.name) == 0){// found the dirent we want to remove
-				printf("found dirent we want to remove\n");
+				//printf("found dirent we want to remove\n");
 				found_dirent_to_remove = 1;
 				current_entry.valid = 0;
 				//clear data blocks 
