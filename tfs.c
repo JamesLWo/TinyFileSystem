@@ -4,7 +4,8 @@
  *	File:	tfs.c
  *
  */
-
+//James Wo jlw373
+//Nathan Yu nty4
 #define FUSE_USE_VERSION 26
 
 #include <fuse.h>
